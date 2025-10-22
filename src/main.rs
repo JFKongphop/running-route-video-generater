@@ -1,4 +1,4 @@
-use running_route_video_generater::utils::running_route_video::generate_running_route_video;
+use running_route_video_generater::generators::running_route_video::generate_running_route_video;
 
 fn main() {
   let route_scale = 0.2;

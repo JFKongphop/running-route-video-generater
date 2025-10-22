@@ -40,7 +40,7 @@ pub fn generate_running_route_video(
 
   // -------- Use background image ----------
   let (bg_image, width, height) = load_and_resize_image("source/bg.jpg", 1080)?;
-  let output_file = "outputs/running.mp4";
+  let output_file = "outputs/running-route-video.mp4";
 
   // --- Coordinate normalization to image space ---
   let to_px = |lat: f64, lon: f64| -> core::Point {
