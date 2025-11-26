@@ -39,7 +39,7 @@ impl RouteDrawer {
       0,
     )?;
     Ok(())
-  } 
+  }
 
   pub fn draw_point(
     &self,
