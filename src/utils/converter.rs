@@ -89,5 +89,5 @@ fn count_digits_iterative(mut num: usize) -> usize {
 }
 
 pub fn pace_percentage(numer: f32, denum: f32) -> f32 {
-  (numer / denum)
+  numer / denum
 }

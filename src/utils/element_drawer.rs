@@ -22,7 +22,7 @@ impl RouteDrawer {
     }
   }
 
-  pub fn draw_line(
+  pub fn line(
     &self,
     frame: &mut Mat,
     p1: core::Point,
@@ -41,7 +41,7 @@ impl RouteDrawer {
     Ok(())
   }
 
-  pub fn draw_point(
+  pub fn point(
     &self,
     frame: &mut Mat,
     point: core::Point,
@@ -59,7 +59,7 @@ impl RouteDrawer {
     Ok(())
   }
 
-  pub fn draw_text_bar(
+  pub fn text_bar(
     &self,
     frame: &mut Mat,
     pace: &str,
@@ -129,6 +129,55 @@ impl RouteDrawer {
       false,
     )?;
 
+    Ok(())
+  }
+
+  pub fn header(&self, frame: &mut Mat, x: i32, y: i32) -> Result<()> {
+    let bluish_color = core::Scalar::new(255.0, 255.0, 0.0, 0.0);
+    const LABELS: [(&str, i32); 4] = [
+      ("KM  PACE", -20),
+      ("BAR", 150),
+      ("HR", 285),
+      ("LENGTH", 320),
+    ];
+
+    let font_scale = 0.5;
+    let y_start = y - 20;
+
+    for (label, offset) in LABELS {
+      self.text(
+        frame,
+        label,
+        x + offset,
+        y_start,
+        font_scale,
+        bluish_color,
+      )?;
+    }
+
+    Ok(())
+  }
+
+  fn text(
+    &self,
+    frame: &mut Mat,
+    text: &str,
+    x: i32,
+    y: i32,
+    font_scale: f64,
+    color: core::Scalar,
+  ) -> Result<()> {
+    imgproc::put_text(
+      frame,
+      text,
+      core::Point::new(x, y),
+      self.font,
+      font_scale,
+      color,
+      self.thickness,
+      imgproc::LINE_AA,
+      false,
+    )?;
     Ok(())
   }
 }
