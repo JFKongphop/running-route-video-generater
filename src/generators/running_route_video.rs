@@ -16,6 +16,10 @@ use crate::utils::{
   element_drawer::RouteDrawer,
   read_file::fit_reader,
 };
+use crate::{
+  types::fit_data::{LapData, RouteData},
+  utils::converter::{convert_pace_to_sec, pace_percentage, string_space},
+};
 
 pub fn generate_running_route_video(
   route_scale: f64,
@@ -25,22 +29,29 @@ pub fn generate_running_route_video(
   let start = Instant::now();
 
   #[rustfmt::skip]
-  let (
-    paces, 
-    points, 
-    distances
-  ) = fit_reader("source/data.fit")?;
+  let (route, lap) = fit_reader("source/car.fit")?;
+  let RouteData {
+    paces,
+    gps_points: points,
+    distances,
+  } = route;
+  let LapData {
+    avg_heart_rate,
+    enhanced_avg_speed,
+    avg_step_length,
+  } = lap;
 
   // -------- Normalize coordinates --------
   #[rustfmt::skip]
   let (
-    (lat_min, lat_max), 
+    (lat_min, lat_max),
     (lon_min, lon_max)
   ) = get_bounds(&points);
 
   // -------- Use background image ----------
-  let (bg_image, width, height) = load_and_resize_image("source/bg.jpg", 1080)?;
-  let output_file = "outputs/running-route-video.mp4";
+  let (bg_image, width, height) =
+    load_and_resize_image("source/car.jpg", 1080)?;
+  let output_file = "outputs/car.mp4";
 
   // --- Coordinate normalization to image space ---
   let to_px = |lat: f64, lon: f64| -> core::Point {
@@ -93,10 +104,97 @@ pub fn generate_running_route_video(
   let mut path_frame = resized.clone();
   let drawer = RouteDrawer::new(width, height);
 
+  let font = imgproc::FONT_HERSHEY_SIMPLEX;
+  let font_scale = 0.5;
+  let thickness = 1;
+
+  // starting point (top-center)
+  let start_x = width / 2;
+  let start_y = 50; // top padding
+
+  let size_of_speeds = enhanced_avg_speed.len();
+  let pace_seconds: Vec<f32> = enhanced_avg_speed
+    .iter()
+    .map(|p| convert_pace_to_sec(p))
+    .collect();
+
+  let min_val = *pace_seconds.iter().min_by(|a, b| a.total_cmp(b)).unwrap();
+
+  let min_denominator = (min_val / 30.0).floor() * 30.0;
+  let bar_max_width = 200;
+  let header_y = start_y - 20;
+
+  drawer.header(&mut path_frame, start_x, start_y).expect("Failed to draw header!");
+
+  for (i, pace) in enhanced_avg_speed.iter().enumerate() {
+    let size = imgproc::get_text_size(
+      pace, font, font_scale, thickness, &mut 0,
+    )?;
+
+    let x = start_x - size.width / 2;
+    let y = start_y + i as i32 * (size.height + 5);
+
+    let pace_space = string_space(size_of_speeds, i, pace);
+    let percent = pace_percentage(min_denominator, pace_seconds[i]);
+
+    // draw text
+    imgproc::put_text(
+      &mut path_frame,
+      &pace_space,
+      core::Point::new(x, y),
+      font,
+      font_scale,
+      core::Scalar::new(255.0, 255.0, 255.0, 0.0),
+      thickness,
+      imgproc::LINE_AA,
+      false,
+    )?;
+
+    imgproc::put_text(
+      &mut path_frame,
+      &format!("{}", avg_heart_rate[i]),
+      core::Point::new(x + 300, y),
+      font,
+      font_scale,
+      core::Scalar::new(255.0, 255.0, 255.0, 0.0),
+      thickness,
+      imgproc::LINE_AA,
+      false,
+    )?;
+
+    imgproc::put_text(
+      &mut path_frame,
+      &format!("{}", avg_step_length[i] / 10.0),
+      core::Point::new(x + 350, y),
+      font,
+      font_scale,
+      core::Scalar::new(255.0, 255.0, 255.0, 0.0),
+      thickness,
+      imgproc::LINE_AA,
+      false,
+    )?;
+
+    // ===== draw bar =====
+    let bar_width = (percent * bar_max_width as f32) as i32;
+    let bar_height = size.height;
+
+    let bar_x = x + size.width + 60; // space after text
+    let bar_y = y - size.height;
+
+    imgproc::rectangle(
+      &mut path_frame,
+      core::Rect::new(bar_x, bar_y, bar_width, bar_height),
+      core::Scalar::new(0.0, 255.0, 0.0, 0.0), // GREEN BAR
+      -1,                                      // fill
+      imgproc::LINE_AA,
+      0,
+    )?;
+  }
+
   // -------- Progressive drawing --------
   for (i, point) in pixel_points.iter().enumerate() {
     if i > 0 {
-      drawer.draw_line(
+      drawer.line(
         &mut path_frame,
         pixel_points[i - 1],
         *point,
@@ -105,7 +203,7 @@ pub fn generate_running_route_video(
     }
 
     let mut current_frame = path_frame.clone();
-    drawer.draw_point(
+    drawer.point(
       &mut current_frame,
       *point,
       core::Scalar::new(0.0, 255.0, 0.0, 0.0),
@@ -115,7 +213,7 @@ pub fn generate_running_route_video(
       let pace_text = format!("Pace: {} min/km", paces[i]);
       let dist_text = format!("Dist: {:.2} km", distances[i] / 1000.0);
 
-      drawer.draw_text_bar(
+      drawer.text_bar(
         &mut current_frame,
         &pace_text,
         &dist_text,
