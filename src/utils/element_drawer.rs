@@ -6,6 +6,21 @@ enum Align {
   Right,
 }
 
+pub struct PositionRect {
+  pub x: i32,
+  pub y: i32,
+}
+
+pub struct SizeRect {
+  pub width: i32,
+  pub height: i32,
+}
+
+pub struct Rect {
+  pub pos: PositionRect,
+  pub size: SizeRect,
+}
+
 pub struct Drawer {
   pub width: i32,
   pub height: i32,
@@ -66,20 +81,25 @@ impl Drawer {
     pace: &str,
     dist: &str,
   ) -> Result<()> {
-    // ----- Draw background bar -----
+    // ----- draw background bar -----
     let thickness = 2;
     let font_scale = 0.8;
     let text_size = self.text_size(dist, font_scale, thickness)?;
     let bar_height = text_size.height + 30;
-    let rect = core::Rect::new(
-      0,
-      self.height - bar_height,
-      self.width,
-      bar_height,
-    );
+    let rect = Rect {
+      pos: PositionRect {
+        x: 0,
+        y: self.height - bar_height,
+      },
+      size: SizeRect {
+        width: self.width,
+        height: bar_height,
+      },
+    };
     let black_color = self.color([0.0; 4]);
     self.rectangle(frame, rect, black_color)?;
 
+    // ----- draw pace and distance -----
     let white_color = self.color([255.0, 255.0, 255.0, 0.0]);
     let y_text = self.height - self.margin;
     let items = vec![(pace, Align::Left), (dist, Align::Right)];
@@ -87,10 +107,7 @@ impl Drawer {
       let x = match align {
         Align::Left => self.margin,
         Align::Right => {
-          let mut base = 0;
-          let size = imgproc::get_text_size(
-            text, self.font, font_scale, thickness, &mut base,
-          )?;
+          let size = self.text_size(text, font_scale, thickness)?;
           self.width - size.width - self.margin
         }
       };
@@ -164,9 +181,14 @@ impl Drawer {
   pub fn rectangle(
     &self,
     frame: &mut Mat,
-    rect: core::Rect,
+    rect: Rect,
     color: core::Scalar,
   ) -> Result<()> {
+    let Rect { pos, size } = rect;
+    let PositionRect { x, y } = pos;
+    let SizeRect { width, height } = size;
+    let rect = core::Rect::new(x, y, width, height);
+
     imgproc::rectangle(
       frame,
       rect,

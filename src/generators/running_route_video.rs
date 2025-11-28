@@ -18,7 +18,10 @@ use crate::utils::{
 };
 use crate::{
   types::fit_data::{LapData, RouteData},
-  utils::converter::{convert_pace_to_sec, pace_percentage, string_space},
+  utils::{
+    converter::{convert_pace_to_sec, pace_percentage, string_space},
+    element_drawer::{PositionRect, Rect, SizeRect},
+  },
 };
 
 pub fn generate_running_route_video(
@@ -131,10 +134,8 @@ pub fn generate_running_route_video(
   let green_color = drawer.color([0.0, 255.0, 0.0, 0.0]);
 
   for (i, pace) in enhanced_avg_speed.iter().enumerate() {
-    let size = imgproc::get_text_size(
-      pace, font, font_scale, thickness, &mut 0,
-    )?;
-
+    // ===== draw text =====
+    let size = drawer.text_size(pace, font_scale, thickness)?;
     let x = start_x - size.width / 2;
     let y = start_y + i as i32 * (size.height + 5);
     let white_color = drawer.color([255.0, 255.0, 255.0, 0.0]);
@@ -180,18 +181,16 @@ pub fn generate_running_route_video(
     // ===== draw bar =====
     let bar_width = (percent * bar_max_width as f32) as i32;
     let bar_height = size.height;
-
-    let bar_x = x + size.width + 60; // space after text
+    let bar_x = x + size.width + 60;
     let bar_y = y - size.height;
-
-    imgproc::rectangle(
-      &mut path_frame,
-      core::Rect::new(bar_x, bar_y, bar_width, bar_height),
-      green_color, // GREEN BAR
-      -1,          // fill
-      imgproc::LINE_AA,
-      0,
-    )?;
+    let rect = Rect {
+      pos: PositionRect { x: bar_x, y: bar_y },
+      size: SizeRect {
+        width: bar_width,
+        height: bar_height,
+      },
+    };
+    drawer.rectangle(&mut path_frame, rect, green_color)?;
   }
 
   // -------- Progressive drawing --------
