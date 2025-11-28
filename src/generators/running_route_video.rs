@@ -1,28 +1,17 @@
-use anyhow::Result;
-#[rustfmt::skip]
-use opencv::{
-  core, 
-  imgproc, 
-  prelude::*, 
-  videoio
-};
-use std::time::Instant;
-#[rustfmt::skip]
 use crate::utils::{
-  converter::{
-    get_bounds, 
-    load_and_resize_image
-  },
+  converter::{get_bounds, load_and_resize_image},
   element_drawer::Drawer,
   read_file::fit_reader,
 };
 use crate::{
-  types::fit_data::{LapData, RouteData},
+  types::{fit_data::{LapData, RouteData}, drawer_data::{PositionRect, Rect, SizeRect}},
   utils::{
     converter::{convert_pace_to_sec, pace_percentage, string_space},
-    element_drawer::{PositionRect, Rect, SizeRect},
   },
 };
+use anyhow::Result;
+use opencv::{core, imgproc, prelude::*, videoio};
+use std::time::Instant;
 
 pub fn generate_running_route_video(
   route_scale: f64,

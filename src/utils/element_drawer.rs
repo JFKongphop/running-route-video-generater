@@ -1,3 +1,4 @@
+use crate::types::drawer_data::{PositionRect, Rect, SizeRect};
 use anyhow::Result;
 use opencv::{core, imgproc, prelude::*};
 
@@ -6,26 +7,11 @@ enum Align {
   Right,
 }
 
-pub struct PositionRect {
-  pub x: i32,
-  pub y: i32,
-}
-
-pub struct SizeRect {
-  pub width: i32,
-  pub height: i32,
-}
-
-pub struct Rect {
-  pub pos: PositionRect,
-  pub size: SizeRect,
-}
-
 pub struct Drawer {
   pub width: i32,
   pub height: i32,
   pub font: i32,
-  pub margin: i32,
+  pub line: i32,
 }
 
 impl Drawer {
@@ -34,7 +20,7 @@ impl Drawer {
       width,
       height,
       font: imgproc::FONT_HERSHEY_SIMPLEX,
-      margin: 20,
+      line: imgproc::LINE_AA,
     }
   }
 
@@ -51,7 +37,7 @@ impl Drawer {
       p2,
       color,
       4,
-      imgproc::LINE_AA,
+      self.line,
       0,
     )?;
     Ok(())
@@ -69,7 +55,7 @@ impl Drawer {
       8,
       color,
       -1,
-      imgproc::LINE_AA,
+      self.line,
       0,
     )?;
     Ok(())
@@ -101,14 +87,15 @@ impl Drawer {
 
     // ----- draw pace and distance -----
     let white_color = self.color([255.0, 255.0, 255.0, 0.0]);
-    let y_text = self.height - self.margin;
+    let margin = 20;
+    let y_text = self.height - margin;
     let items = vec![(pace, Align::Left), (dist, Align::Right)];
     for (text, align) in items {
       let x = match align {
-        Align::Left => self.margin,
+        Align::Left => margin,
         Align::Right => {
           let size = self.text_size(text, font_scale, thickness)?;
-          self.width - size.width - self.margin
+          self.width - size.width - margin
         }
       };
 
@@ -172,7 +159,7 @@ impl Drawer {
       font_scale,
       color,
       thickness,
-      imgproc::LINE_AA,
+      self.line,
       false,
     )?;
     Ok(())
@@ -194,7 +181,7 @@ impl Drawer {
       rect,
       color,
       -1,
-      imgproc::LINE_AA,
+      self.line,
       0,
     )?;
     Ok(())
