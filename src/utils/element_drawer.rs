@@ -6,23 +6,19 @@ enum Align {
   Right,
 }
 
-pub struct RouteDrawer {
+pub struct Drawer {
   pub width: i32,
   pub height: i32,
   pub font: i32,
-  pub font_scale: f64,
-  pub thickness: i32,
   pub margin: i32,
 }
 
-impl RouteDrawer {
+impl Drawer {
   pub fn new(width: i32, height: i32) -> Self {
     Self {
       width,
       height,
       font: imgproc::FONT_HERSHEY_SIMPLEX,
-      font_scale: 0.8,
-      thickness: 2,
       margin: 20,
     }
   }
@@ -71,27 +67,20 @@ impl RouteDrawer {
     dist: &str,
   ) -> Result<()> {
     // ----- Draw background bar -----
-    let mut baseline = 0;
-    let text_size = imgproc::get_text_size(
-      dist,
-      self.font,
-      self.font_scale,
-      self.thickness,
-      &mut baseline,
-    )?;
+    let thickness = 2;
+    let font_scale = 0.8;
+    let text_size = self.text_size(dist, font_scale, thickness)?;
     let bar_height = text_size.height + 30;
-
     let rect = core::Rect::new(
       0,
       self.height - bar_height,
       self.width,
       bar_height,
     );
+    let black_color = self.color([0.0; 4]);
+    self.rectangle(frame, rect, black_color)?;
 
-    let black = core::Scalar::new(0.0, 0.0, 0.0, 0.0);
-    self.rectangle(frame, rect, black)?;
-
-    let white = core::Scalar::new(255.0, 255.0, 255.0, 0.0);
+    let white_color = self.color([255.0, 255.0, 255.0, 0.0]);
     let y_text = self.height - self.margin;
     let items = vec![(pace, Align::Left), (dist, Align::Right)];
     for (text, align) in items {
@@ -100,11 +89,7 @@ impl RouteDrawer {
         Align::Right => {
           let mut base = 0;
           let size = imgproc::get_text_size(
-            text,
-            self.font,
-            self.font_scale,
-            self.thickness,
-            &mut base,
+            text, self.font, font_scale, thickness, &mut base,
           )?;
           self.width - size.width - self.margin
         }
@@ -115,8 +100,9 @@ impl RouteDrawer {
         text,
         x,
         y_text,
-        self.font_scale,
-        white,
+        font_scale,
+        thickness,
+        white_color,
       )?;
     }
 
@@ -124,7 +110,7 @@ impl RouteDrawer {
   }
 
   pub fn header(&self, frame: &mut Mat, x: i32, y: i32) -> Result<()> {
-    let bluish_color = core::Scalar::new(255.0, 255.0, 0.0, 0.0);
+    let bluish_color = self.color([255.0, 255.0, 0.0, 0.0]);
     const LABELS: [(&str, i32); 4] = [
       ("KM  PACE", -20),
       ("BAR", 150),
@@ -134,6 +120,7 @@ impl RouteDrawer {
 
     let font_scale = 0.5;
     let y_start = y - 20;
+    let thickness = 2;
 
     for (label, offset) in LABELS {
       self.text(
@@ -142,6 +129,7 @@ impl RouteDrawer {
         x + offset,
         y_start,
         font_scale,
+        thickness,
         bluish_color,
       )?;
     }
@@ -149,13 +137,14 @@ impl RouteDrawer {
     Ok(())
   }
 
-  fn text(
+  pub fn text(
     &self,
     frame: &mut Mat,
     text: &str,
     x: i32,
     y: i32,
     font_scale: f64,
+    thickness: i32,
     color: core::Scalar,
   ) -> Result<()> {
     imgproc::put_text(
@@ -165,14 +154,14 @@ impl RouteDrawer {
       self.font,
       font_scale,
       color,
-      self.thickness,
+      thickness,
       imgproc::LINE_AA,
       false,
     )?;
     Ok(())
   }
 
-  fn rectangle(
+  pub fn rectangle(
     &self,
     frame: &mut Mat,
     rect: core::Rect,
@@ -187,5 +176,26 @@ impl RouteDrawer {
       0,
     )?;
     Ok(())
+  }
+
+  pub fn text_size(
+    &self,
+    text: &str,
+    font_scale: f64,
+    thickness: i32,
+  ) -> Result<core::Size> {
+    let mut baseline = 0;
+    let size = imgproc::get_text_size(
+      text,
+      self.font,
+      font_scale,
+      thickness,
+      &mut baseline,
+    )?;
+    Ok(size)
+  }
+
+  pub fn color(&self, bgra: [f64; 4]) -> core::Scalar {
+    core::Scalar::new(bgra[0], bgra[1], bgra[2], bgra[3])
   }
 }

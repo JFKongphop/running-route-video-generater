@@ -13,7 +13,7 @@ use crate::utils::{
     get_bounds, 
     load_and_resize_image
   },
-  element_drawer::RouteDrawer,
+  element_drawer::Drawer,
   read_file::fit_reader,
 };
 use crate::{
@@ -102,7 +102,7 @@ pub fn generate_running_route_video(
   )?;
 
   let mut path_frame = resized.clone();
-  let drawer = RouteDrawer::new(width, height);
+  let drawer = Drawer::new(width, height);
 
   let font = imgproc::FONT_HERSHEY_SIMPLEX;
   let font_scale = 0.5;
@@ -124,7 +124,11 @@ pub fn generate_running_route_video(
   let bar_max_width = 200;
   let header_y = start_y - 20;
 
-  drawer.header(&mut path_frame, start_x, start_y).expect("Failed to draw header!");
+  drawer
+    .header(&mut path_frame, start_x, start_y)
+    .expect("Failed to draw header!");
+
+  let green_color = drawer.color([0.0, 255.0, 0.0, 0.0]);
 
   for (i, pace) in enhanced_avg_speed.iter().enumerate() {
     let size = imgproc::get_text_size(
@@ -133,46 +137,45 @@ pub fn generate_running_route_video(
 
     let x = start_x - size.width / 2;
     let y = start_y + i as i32 * (size.height + 5);
-
+    let white_color = drawer.color([255.0, 255.0, 255.0, 0.0]);
     let pace_space = string_space(size_of_speeds, i, pace);
     let percent = pace_percentage(min_denominator, pace_seconds[i]);
+    let hr = &format!("{}", avg_heart_rate[i]);
+    let stride_length = &format!("{}", avg_step_length[i] / 10.0);
 
-    // draw text
-    imgproc::put_text(
-      &mut path_frame,
-      &pace_space,
-      core::Point::new(x, y),
-      font,
-      font_scale,
-      core::Scalar::new(255.0, 255.0, 255.0, 0.0),
-      thickness,
-      imgproc::LINE_AA,
-      false,
-    )?;
-
-    imgproc::put_text(
-      &mut path_frame,
-      &format!("{}", avg_heart_rate[i]),
-      core::Point::new(x + 300, y),
-      font,
-      font_scale,
-      core::Scalar::new(255.0, 255.0, 255.0, 0.0),
-      thickness,
-      imgproc::LINE_AA,
-      false,
-    )?;
-
-    imgproc::put_text(
-      &mut path_frame,
-      &format!("{}", avg_step_length[i] / 10.0),
-      core::Point::new(x + 350, y),
-      font,
-      font_scale,
-      core::Scalar::new(255.0, 255.0, 255.0, 0.0),
-      thickness,
-      imgproc::LINE_AA,
-      false,
-    )?;
+    drawer
+      .text(
+        &mut path_frame,
+        &pace_space,
+        x,
+        y,
+        font_scale,
+        thickness,
+        white_color,
+      )
+      .expect("Failed to draw pace");
+    drawer
+      .text(
+        &mut path_frame,
+        hr,
+        x + 300,
+        y,
+        font_scale,
+        thickness,
+        white_color,
+      )
+      .expect("Failed to draw heart rate");
+    drawer
+      .text(
+        &mut path_frame,
+        stride_length,
+        x + 350,
+        y,
+        font_scale,
+        thickness,
+        white_color,
+      )
+      .expect("Failed to draw stride length");
 
     // ===== draw bar =====
     let bar_width = (percent * bar_max_width as f32) as i32;
@@ -184,8 +187,8 @@ pub fn generate_running_route_video(
     imgproc::rectangle(
       &mut path_frame,
       core::Rect::new(bar_x, bar_y, bar_width, bar_height),
-      core::Scalar::new(0.0, 255.0, 0.0, 0.0), // GREEN BAR
-      -1,                                      // fill
+      green_color, // GREEN BAR
+      -1,          // fill
       imgproc::LINE_AA,
       0,
     )?;
@@ -194,20 +197,17 @@ pub fn generate_running_route_video(
   // -------- Progressive drawing --------
   for (i, point) in pixel_points.iter().enumerate() {
     if i > 0 {
+      let red_color = drawer.color([0.0, 0.0, 255.0, 0.0]);
       drawer.line(
         &mut path_frame,
         pixel_points[i - 1],
         *point,
-        core::Scalar::new(0.0, 0.0, 255.0, 0.0),
+        red_color,
       )?;
     }
 
     let mut current_frame = path_frame.clone();
-    drawer.point(
-      &mut current_frame,
-      *point,
-      core::Scalar::new(0.0, 255.0, 0.0, 0.0),
-    )?;
+    drawer.point(&mut current_frame, *point, green_color)?;
 
     if i < paces.len() && i < distances.len() {
       let pace_text = format!("Pace: {} min/km", paces[i]);
