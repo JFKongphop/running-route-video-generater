@@ -31,15 +31,7 @@ impl Drawer {
     p2: core::Point,
     color: core::Scalar,
   ) -> Result<()> {
-    imgproc::line(
-      frame,
-      p1,
-      p2,
-      color,
-      4,
-      self.line,
-      0,
-    )?;
+    imgproc::line(frame, p1, p2, color, 4, self.line, 0)?;
     Ok(())
   }
 
@@ -49,15 +41,7 @@ impl Drawer {
     point: core::Point,
     color: core::Scalar,
   ) -> Result<()> {
-    imgproc::circle(
-      frame,
-      point,
-      8,
-      color,
-      -1,
-      self.line,
-      0,
-    )?;
+    imgproc::circle(frame, point, 8, color, -1, self.line, 0)?;
     Ok(())
   }
 
@@ -176,14 +160,7 @@ impl Drawer {
     let SizeRect { width, height } = size;
     let rect = core::Rect::new(x, y, width, height);
 
-    imgproc::rectangle(
-      frame,
-      rect,
-      color,
-      -1,
-      self.line,
-      0,
-    )?;
+    imgproc::rectangle(frame, rect, color, -1, self.line, 0)?;
     Ok(())
   }
 

@@ -1,13 +1,12 @@
 use crate::utils::{
-  converter::{get_bounds, load_and_resize_image},
-  element_drawer::Drawer,
-  read_file::fit_reader,
+  converter::{get_bounds, load_and_resize_image}, element_drawer::Drawer, performance::processed, read_file::fit_reader
 };
 use crate::{
-  types::{fit_data::{LapData, RouteData}, drawer_data::{PositionRect, Rect, SizeRect}},
-  utils::{
-    converter::{convert_pace_to_sec, pace_percentage, string_space},
+  types::{
+    drawer_data::{PositionRect, Rect, SizeRect},
+    fit_data::{LapData, RouteData},
   },
+  utils::converter::{convert_pace_to_sec, pace_percentage, string_space},
 };
 use anyhow::Result;
 use opencv::{core, imgproc, prelude::*, videoio};
@@ -18,7 +17,7 @@ pub fn generate_running_route_video(
   offset_x_percent: f64,
   offset_y_percent: f64,
 ) -> Result<()> {
-  let start = Instant::now();
+  // let start = Instant::now();
 
   #[rustfmt::skip]
   let (route, lap) = fit_reader("source/car.fit")?;
@@ -209,13 +208,7 @@ pub fn generate_running_route_video(
     }
 
     video.write(&current_frame)?;
-    if (i + 1) % 100 == 0 {
-      println!(
-        "Processed {}/{} points",
-        i + 1,
-        pixel_points.len()
-      );
-    }
+    processed(i, pixel_points.clone());
   }
 
   video.release()?;
@@ -223,10 +216,6 @@ pub fn generate_running_route_video(
     "✅ Video created: {} with {} points",
     output_file,
     pixel_points.len()
-  );
-  println!(
-    "⏱️ Time: {:.2}s",
-    start.elapsed().as_secs_f64()
   );
   Ok(())
 }
