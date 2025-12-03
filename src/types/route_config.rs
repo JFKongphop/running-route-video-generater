@@ -79,30 +79,30 @@ impl RouteColor {
   /// Creates default colors (red route, green marker, white text)
   pub fn default() -> Self {
     Self {
-      route_line: [0.0, 0.0, 255.0, 0.0],      // Red
+      route_line: [0.0, 0.0, 255.0, 0.0], // Red
       current_position: [0.0, 255.0, 0.0, 0.0], // Green
-      text: [255.0, 255.0, 255.0, 0.0],         // White
-      lap_bars: [0.0, 255.0, 0.0, 0.0],         // Green
+      text: [255.0, 255.0, 255.0, 0.0],   // White
+      lap_bars: [0.0, 255.0, 0.0, 0.0],   // Green
     }
   }
 
   /// Creates a blue color scheme
   pub fn blue_scheme() -> Self {
     Self {
-      route_line: [255.0, 0.0, 0.0, 0.0],       // Blue
+      route_line: [255.0, 0.0, 0.0, 0.0], // Blue
       current_position: [255.0, 255.0, 0.0, 0.0], // Cyan
-      text: [255.0, 255.0, 255.0, 0.0],         // White
-      lap_bars: [255.0, 128.0, 0.0, 0.0],       // Orange-Blue
+      text: [255.0, 255.0, 255.0, 0.0],   // White
+      lap_bars: [255.0, 128.0, 0.0, 0.0], // Orange-Blue
     }
   }
 
   /// Creates a vibrant neon scheme
   pub fn neon_scheme() -> Self {
     Self {
-      route_line: [255.0, 0.0, 255.0, 0.0],     // Magenta
+      route_line: [255.0, 0.0, 255.0, 0.0], // Magenta
       current_position: [0.0, 255.0, 255.0, 0.0], // Yellow
-      text: [255.0, 255.0, 255.0, 0.0],         // White
-      lap_bars: [255.0, 0.0, 255.0, 0.0],       // Magenta
+      text: [255.0, 255.0, 255.0, 0.0],     // White
+      lap_bars: [255.0, 0.0, 255.0, 0.0],   // Magenta
     }
   }
 }
@@ -174,19 +174,43 @@ impl PaceDistConfig {
   }
 }
 
-/// Text color options for lap data
+/// Color options for lap data text
 #[derive(Debug, Clone, Copy)]
-pub enum TextColor {
+pub enum Color {
   Black,
   White,
+  Red,
+  Orange,
+  Yellow,
+  YellowGreen,
+  Green,
+  BlueGreen,
+  Blue,
+  BlueViolet,
+  Violet,
+  RedViolet,
+  RedOrange,
+  YellowOrange,
 }
 
-impl TextColor {
+impl Color {
   /// Get BGRA color value
   pub fn to_bgra(&self) -> [f64; 4] {
     match self {
-      TextColor::Black => [0.0, 0.0, 0.0, 0.0],
-      TextColor::White => [255.0, 255.0, 255.0, 0.0],
+      Color::Black => [0.0, 0.0, 0.0, 0.0],
+      Color::White => [255.0, 255.0, 255.0, 0.0],
+      Color::Red => [0.0, 0.0, 255.0, 0.0],
+      Color::Orange => [0.0, 165.0, 255.0, 0.0],
+      Color::Yellow => [0.0, 255.0, 255.0, 0.0],
+      Color::YellowGreen => [47.0, 255.0, 173.0, 0.0],
+      Color::Green => [0.0, 255.0, 0.0, 0.0],
+      Color::BlueGreen => [128.0, 255.0, 0.0, 0.0],
+      Color::Blue => [255.0, 0.0, 0.0, 0.0],
+      Color::BlueViolet => [226.0, 43.0, 138.0, 0.0],
+      Color::Violet => [211.0, 0.0, 148.0, 0.0],
+      Color::RedViolet => [211.0, 0.0, 199.0, 0.0],
+      Color::RedOrange => [0.0, 69.0, 255.0, 0.0],
+      Color::YellowOrange => [0.0, 204.0, 255.0, 0.0],
     }
   }
 }
@@ -197,7 +221,7 @@ pub struct LapDataConfig {
   /// Position of the lap panel as percentage (x_percent, y_percent) where 0.0-1.0
   pub position: (f64, f64),
   /// Text color for lap data
-  pub text_color: TextColor,
+  pub text_color: Color,
   /// Whether to show heart rate
   pub show_heart_rate: bool,
   /// Whether to show stride length
@@ -211,7 +235,7 @@ impl LapDataConfig {
   /// Note: font_scale (0.5), thickness (1), and bar_max_width (200) are fixed
   pub fn new(
     position: (f64, f64),
-    text_color: TextColor,
+    text_color: Color,
     show_heart_rate: bool,
     show_stride_length: bool,
     show_pace_bars: bool,
@@ -228,8 +252,8 @@ impl LapDataConfig {
   /// Creates default configuration
   pub fn default() -> Self {
     Self {
-      position: (0.5, 0.09),  // 50% x, 9% y
-      text_color: TextColor::White,
+      position: (0.5, 0.09), // 50% x, 9% y
+      text_color: Color::White,
       show_heart_rate: true,
       show_stride_length: true,
       show_pace_bars: true,
@@ -239,8 +263,8 @@ impl LapDataConfig {
   /// Creates minimal configuration (pace only, no extras)
   pub fn minimal() -> Self {
     Self {
-      position: (0.5, 0.09),  // 50% x, 9% y
-      text_color: TextColor::White,
+      position: (0.5, 0.09), // 50% x, 9% y
+      text_color: Color::White,
       show_heart_rate: false,
       show_stride_length: false,
       show_pace_bars: true,
@@ -250,8 +274,8 @@ impl LapDataConfig {
   /// Creates detailed configuration (all stats, larger bars)
   pub fn detailed() -> Self {
     Self {
-      position: (0.5, 0.07),  // 50% x, 7% y
-      text_color: TextColor::White,
+      position: (0.5, 0.07), // 50% x, 7% y
+      text_color: Color::White,
       show_heart_rate: true,
       show_stride_length: true,
       show_pace_bars: true,
@@ -270,6 +294,12 @@ pub struct RouteVideoConfig {
   pub pace_dist: PaceDistConfig,
   /// Lap statistics settings
   pub lap_data: LapDataConfig,
+  /// Whether to show the bottom pace/distance bar
+  pub show_bottom_bar: bool,
+  /// Whether to show the progressive route animation
+  pub show_route: bool,
+  /// Whether to show the lap data panel
+  pub show_lap_data: bool,
 }
 
 impl RouteVideoConfig {
@@ -279,12 +309,18 @@ impl RouteVideoConfig {
     colors: RouteColor,
     pace_dist: PaceDistConfig,
     lap_data: LapDataConfig,
+    show_bottom_bar: bool,
+    show_route: bool,
+    show_lap_data: bool,
   ) -> Self {
     Self {
       route_scale,
       colors,
       pace_dist,
       lap_data,
+      show_bottom_bar,
+      show_route,
+      show_lap_data,
     }
   }
 
@@ -295,6 +331,9 @@ impl RouteVideoConfig {
       colors: RouteColor::default(),
       pace_dist: PaceDistConfig::default(),
       lap_data: LapDataConfig::default(),
+      show_bottom_bar: true,
+      show_route: true,
+      show_lap_data: true,
     }
   }
 
@@ -305,6 +344,9 @@ impl RouteVideoConfig {
       colors: RouteColor::default(),
       pace_dist: PaceDistConfig::pace_only(),
       lap_data: LapDataConfig::minimal(),
+      show_bottom_bar: true,
+      show_route: true,
+      show_lap_data: true,
     }
   }
 
@@ -315,6 +357,9 @@ impl RouteVideoConfig {
       colors: RouteColor::default(),
       pace_dist: PaceDistConfig::large_text(),
       lap_data: LapDataConfig::detailed(),
+      show_bottom_bar: true,
+      show_route: true,
+      show_lap_data: true,
     }
   }
 
@@ -325,6 +370,9 @@ impl RouteVideoConfig {
       colors: RouteColor::neon_scheme(),
       pace_dist: PaceDistConfig::default(),
       lap_data: LapDataConfig::default(),
+      show_bottom_bar: true,
+      show_route: true,
+      show_lap_data: true,
     }
   }
 }
