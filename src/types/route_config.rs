@@ -300,6 +300,12 @@ pub struct RouteVideoConfig {
   pub show_route: bool,
   /// Whether to show the lap data panel
   pub show_lap_data: bool,
+  /// Path to FIT file
+  pub fit_file: String,
+  /// Path to background image
+  pub background_image: String,
+  /// Output video file path
+  pub output_file: String,
 }
 
 impl RouteVideoConfig {
@@ -312,6 +318,9 @@ impl RouteVideoConfig {
     show_bottom_bar: bool,
     show_route: bool,
     show_lap_data: bool,
+    fit_file: String,
+    background_image: String,
+    output_file: String,
   ) -> Self {
     Self {
       route_scale,
@@ -321,6 +330,9 @@ impl RouteVideoConfig {
       show_bottom_bar,
       show_route,
       show_lap_data,
+      fit_file,
+      background_image,
+      output_file,
     }
   }
 
@@ -334,6 +346,9 @@ impl RouteVideoConfig {
       show_bottom_bar: true,
       show_route: true,
       show_lap_data: true,
+      fit_file: "source/car.fit".to_string(),
+      background_image: "source/car.jpg".to_string(),
+      output_file: "outputs/car.mp4".to_string(),
     }
   }
 
@@ -347,6 +362,9 @@ impl RouteVideoConfig {
       show_bottom_bar: true,
       show_route: true,
       show_lap_data: true,
+      fit_file: "source/car.fit".to_string(),
+      background_image: "source/car.jpg".to_string(),
+      output_file: "outputs/car.mp4".to_string(),
     }
   }
 
@@ -360,6 +378,9 @@ impl RouteVideoConfig {
       show_bottom_bar: true,
       show_route: true,
       show_lap_data: true,
+      fit_file: "source/car.fit".to_string(),
+      background_image: "source/car.jpg".to_string(),
+      output_file: "outputs/car.mp4".to_string(),
     }
   }
 
@@ -373,6 +394,9 @@ impl RouteVideoConfig {
       show_bottom_bar: true,
       show_route: true,
       show_lap_data: true,
+      fit_file: "source/car.fit".to_string(),
+      background_image: "source/car.jpg".to_string(),
+      output_file: "outputs/car.mp4".to_string(),
     }
   }
 }

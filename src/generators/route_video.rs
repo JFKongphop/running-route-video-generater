@@ -267,7 +267,7 @@ pub fn generate_progressive_route_with_config(
 ) -> Result<()> {
   /********** Read and extract data **********/
   #[rustfmt::skip]
-  let (route, lap) = fit_reader("source/car.fit")?;
+  let (route, lap) = fit_reader(&config.fit_file)?;
   let RouteData {
     paces,
     gps_points: points,
@@ -288,7 +288,7 @@ pub fn generate_progressive_route_with_config(
 
   /********** Get background image **********/
   let (bg_image, width, height) =
-    load_and_resize_image("source/car.jpg", 1080)?;
+    load_and_resize_image(&config.background_image, 1080)?;;
 
   /********** Coordinate normalization to image space **********/
   let to_px = |lat: f64, lon: f64| -> core::Point {
@@ -318,8 +318,7 @@ pub fn generate_progressive_route_with_config(
     .map(|&(la, lo)| to_px(la, lo))
     .collect();
   let fps = (pixel_points.len() / 15) as f64;
-  let output_file = "outputs/car2.mp4";
-  let mut video = video_creator(width, height, fps, output_file)?;
+  let mut video = video_creator(width, height, fps, &config.output_file)?;
 
   /********** Initialized frame **********/
   let mut resized = Mat::default();
@@ -491,7 +490,7 @@ pub fn generate_progressive_route_with_config(
   video.release()?;
   println!(
     "✅ Video created: {} with {} points",
-    output_file,
+    config.output_file,
     pixel_points.len()
   );
   Ok(())

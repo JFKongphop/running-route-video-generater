@@ -50,16 +50,19 @@ fn main() -> Result<()> {
     pace_dist,
     lap_data,
     true,  // show_bottom_bar
-    false, // show_route
+    true,  // show_route
     true,  // show_lap_data
+    "source/car.fit".to_string(),      // fit_file
+    "source/car.jpg".to_string(),      // background_image
+    "outputs/config.mp4".to_string(),     // output_file
   );
 
   measure("Total execution", || {
-    // generate_progressive_route(
-    //   route_scale.scale,
-    //   route_scale.offset_x_percent,
-    //   route_scale.offset_y_percent,
-    // )
+    generate_progressive_route(
+      route_scale.scale,
+      route_scale.offset_x_percent,
+      route_scale.offset_y_percent,
+    );
     generate_progressive_route_with_config(config)
   })?;
 
