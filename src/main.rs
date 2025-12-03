@@ -1,7 +1,7 @@
 use anyhow::Result;
-use running_route_video_generater::generators::running_route_image::generate_running_route_image;
-use running_route_video_generater::generators::route_video::generate_progressive_route;
-use running_route_video_generater::utils::performance::measure;
+use runarium::generators::running_route_image::generate_running_route_image;
+use runarium::generators::route_video::generate_progressive_route;
+use runarium::utils::performance::measure;
 
 fn main() -> Result<()> {
   let route_scale = 0.2;

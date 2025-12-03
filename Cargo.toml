@@ -1,7 +1,24 @@
 [package]
-name = "running-route-video-generater"
+name = "runarium"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "Generate animated videos from GPS running/cycling data with real-time statistics"
+repository = "https://github.com/JFKongphop/runarium"
+homepage = "https://github.com/JFKongphop/runarium"
+documentation = "https://docs.rs/runarium"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+keywords = ["gps", "fitness", "video", "visualization", "running"]
+categories = ["multimedia::video", "visualization", "command-line-utilities"]
+
+[lib]
+name = "runarium"
+path = "src/lib.rs"
+
+[[bin]]
+name = "runarium"
+path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.99"

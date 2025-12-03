@@ -1760,7 +1760,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "running-route-video-generater"
+name = "runarium"
 version = "0.1.0"
 dependencies = [
  "anyhow",
