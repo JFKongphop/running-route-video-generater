@@ -8,5 +8,7 @@ anyhow = "1.0.99"
 fitparser = "0.10.0"
 image = "0.25.6"
 imageproc = "0.25.0"
-opencv = "0.95.1"
+opencv = "0.97.2"
 reqwest = { version = "0.12", features = ["blocking"] }
+divan = "0.1.21"
+

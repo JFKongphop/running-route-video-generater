@@ -1,5 +1,9 @@
 use crate::utils::{
-  converter::{get_bounds, load_and_resize_image}, element_drawer::Drawer, performance::processed, read_file::fit_reader
+  converter::{get_bounds, load_and_resize_image},
+  creator::video_creator,
+  element_drawer::Drawer,
+  performance::processed,
+  read_file::fit_reader,
 };
 use crate::{
   types::{
@@ -12,13 +16,32 @@ use anyhow::Result;
 use opencv::{core, imgproc, prelude::*, videoio};
 use std::time::Instant;
 
-pub fn generate_running_route_video(
+/// Generates an animated video of a running route with lap statistics overlay.
+///
+/// Creates a video showing progressive route drawing on a background image,
+/// with real-time pace/distance info and a lap statistics panel.
+///
+/// # Arguments
+/// * `route_scale` - Scale factor for route visualization (0.0-1.0 recommended)
+/// * `offset_x_percent` - Horizontal offset as percentage of image width
+/// * `offset_y_percent` - Vertical offset as percentage of image height
+///
+/// # Returns
+/// * `Ok(())` - Video successfully created and saved
+/// * `Err` - If FIT file reading, video encoding, or drawing operations fail
+///
+/// # Output
+/// Creates `outputs/car.mp4` with:
+/// - Animated route drawing (red line)
+/// - Current position marker (green dot)
+/// - Lap statistics panel (pace, heart rate, stride length)
+/// - Real-time pace and distance overlay
+pub fn generate_progressive_route(
   route_scale: f64,
   offset_x_percent: f64,
   offset_y_percent: f64,
 ) -> Result<()> {
-  // let start = Instant::now();
-
+  /********** Read and extract data **********/
   #[rustfmt::skip]
   let (route, lap) = fit_reader("source/car.fit")?;
   let RouteData {
@@ -32,19 +55,18 @@ pub fn generate_running_route_video(
     avg_step_length,
   } = lap;
 
-  // -------- Normalize coordinates --------
+  /********** Normalize coordinates **********/
   #[rustfmt::skip]
   let (
     (lat_min, lat_max),
     (lon_min, lon_max)
   ) = get_bounds(&points);
 
-  // -------- Use background image ----------
+  /********** Get backgrund image **********/
   let (bg_image, width, height) =
     load_and_resize_image("source/car.jpg", 1080)?;
-  let output_file = "outputs/car.mp4";
 
-  // --- Coordinate normalization to image space ---
+  /********** Coordinate normalization to image space **********/
   let to_px = |lat: f64, lon: f64| -> core::Point {
     let nx = if lon_max != lon_min {
       (lon - lon_min) / (lon_max - lon_min)
@@ -63,24 +85,17 @@ pub fn generate_running_route_video(
     core::Point::new(x, y)
   };
 
+  /********** Initialized video generator **********/
   #[rustfmt::skip]
   let pixel_points: Vec<core::Point> = points
     .iter()
     .map(|&(la, lo)| to_px(la, lo))
     .collect();
   let fps = (pixel_points.len() / 15) as f64;
+  let output_file = "outputs/car.mp4";
+  let mut video = video_creator(width, height, fps, output_file)?;
 
-  // -------- Initialize video writer --------
-  let fourcc = videoio::VideoWriter::fourcc('m', 'p', '4', 'v')?;
-  let video_size = core::Size::new(width, height);
-  let mut video = videoio::VideoWriter::new(
-    output_file,
-    fourcc,
-    fps,
-    video_size,
-    true,
-  )?;
-
+  /********** Initialized frame **********/
   // let mut path_frame = Mat::zeros(height, width, core::CV_8UC3)?.to_mat()?;
   let mut resized = Mat::default();
   imgproc::resize(
@@ -99,39 +114,35 @@ pub fn generate_running_route_video(
   let font_scale = 0.5;
   let thickness = 1;
 
-  // starting point (top-center)
-  let start_x = width / 2;
-  let start_y = 50; // top padding
-
-  let size_of_speeds = enhanced_avg_speed.len();
   let pace_seconds: Vec<f32> = enhanced_avg_speed
     .iter()
     .map(|p| convert_pace_to_sec(p))
     .collect();
 
-  let min_val = *pace_seconds.iter().min_by(|a, b| a.total_cmp(b)).unwrap();
-
+  let start_x = width / 2;
+  let start_y = 100;
+  let min_val = *pace_seconds
+    .iter()
+    .min_by(|a, b| a.total_cmp(b))
+    .expect("Failed to find min pace");
   let min_denominator = (min_val / 30.0).floor() * 30.0;
   let bar_max_width = 200;
   let header_y = start_y - 20;
 
+  /********** Create lap data **********/
   drawer
     .header(&mut path_frame, start_x, start_y)
     .expect("Failed to draw header!");
 
   let green_color = drawer.color([0.0, 255.0, 0.0, 0.0]);
-
+  let white_color = drawer.color([255.0, 255.0, 255.0, 0.0]);
+  let size_of_speeds = enhanced_avg_speed.len();
   for (i, pace) in enhanced_avg_speed.iter().enumerate() {
-    // ===== draw text =====
     let size = drawer.text_size(pace, font_scale, thickness)?;
     let x = start_x - size.width / 2;
     let y = start_y + i as i32 * (size.height + 5);
-    let white_color = drawer.color([255.0, 255.0, 255.0, 0.0]);
-    let pace_space = string_space(size_of_speeds, i, pace);
-    let percent = pace_percentage(min_denominator, pace_seconds[i]);
-    let hr = &format!("{}", avg_heart_rate[i]);
-    let stride_length = &format!("{}", avg_step_length[i] / 10.0);
 
+    let pace_space = string_space(size_of_speeds, i + 1, pace);
     drawer
       .text(
         &mut path_frame,
@@ -143,6 +154,8 @@ pub fn generate_running_route_video(
         white_color,
       )
       .expect("Failed to draw pace");
+
+    let hr = &format!("{}", avg_heart_rate[i]);
     drawer
       .text(
         &mut path_frame,
@@ -154,6 +167,9 @@ pub fn generate_running_route_video(
         white_color,
       )
       .expect("Failed to draw heart rate");
+
+    let lenght_meters = avg_step_length[i] / 10.0;
+    let stride_length = &format!("{}", lenght_meters);
     drawer
       .text(
         &mut path_frame,
@@ -166,7 +182,7 @@ pub fn generate_running_route_video(
       )
       .expect("Failed to draw stride length");
 
-    // ===== draw bar =====
+    let percent = pace_percentage(min_denominator, pace_seconds[i]);
     let bar_width = (percent * bar_max_width as f32) as i32;
     let bar_height = size.height;
     let bar_x = x + size.width + 60;
@@ -178,13 +194,15 @@ pub fn generate_running_route_video(
         height: bar_height,
       },
     };
-    drawer.rectangle(&mut path_frame, rect, green_color)?;
+    drawer
+      .rectangle(&mut path_frame, rect, green_color)
+      .expect("Failed to draw bar");
   }
 
-  // -------- Progressive drawing --------
+  /********** Create progressive route **********/
+  let red_color = drawer.color([0.0, 0.0, 255.0, 0.0]);
   for (i, point) in pixel_points.iter().enumerate() {
     if i > 0 {
-      let red_color = drawer.color([0.0, 0.0, 255.0, 0.0]);
       drawer.line(
         &mut path_frame,
         pixel_points[i - 1],
