@@ -25,28 +25,40 @@ fn main() -> Result<()> {
 
   // Example 1: Using preset configurations
   println!("📍 Example 1: Default configuration");
-  let config = RouteVideoConfig::default();
+  let mut config = RouteVideoConfig::default();
+  config.fit_file = "source/car.fit".to_string();
+  config.background_image = "source/car.jpg".to_string();
+  config.output_file = "outputs/example1_default.mp4".to_string();
   measure("Default config", || {
     generate_progressive_route_with_config(config)
   })?;
 
   // Example 2: Minimalist configuration
   println!("\n📍 Example 2: Minimalist configuration");
-  let config = RouteVideoConfig::minimalist();
+  let mut config = RouteVideoConfig::minimalist();
+  config.fit_file = "source/car.fit".to_string();
+  config.background_image = "source/car.jpg".to_string();
+  config.output_file = "outputs/example2_minimalist.mp4".to_string();
   measure("Minimalist config", || {
     generate_progressive_route_with_config(config)
   })?;
 
   // Example 3: Detailed configuration
   println!("\n📍 Example 3: Detailed configuration");
-  let config = RouteVideoConfig::detailed();
+  let mut config = RouteVideoConfig::detailed();
+  config.fit_file = "source/car.fit".to_string();
+  config.background_image = "source/car.jpg".to_string();
+  config.output_file = "outputs/example3_detailed.mp4".to_string();
   measure("Detailed config", || {
     generate_progressive_route_with_config(config)
   })?;
 
   // Example 4: Neon theme
   println!("\n📍 Example 4: Neon theme");
-  let config = RouteVideoConfig::neon();
+  let mut config = RouteVideoConfig::neon();
+  config.fit_file = "source/car.fit".to_string();
+  config.background_image = "source/car.jpg".to_string();
+  config.output_file = "outputs/example4_neon.mp4".to_string();
   measure("Neon theme", || {
     generate_progressive_route_with_config(config)
   })?;
@@ -96,6 +108,9 @@ fn main() -> Result<()> {
     true, // show_bottom_bar
     true, // show_route
     true, // show_lap_data
+    "source/car.fit".to_string(),
+    "source/car.jpg".to_string(),
+    "outputs/example5_custom.mp4".to_string(),
   );
 
   measure("Custom config", || {
@@ -105,6 +120,9 @@ fn main() -> Result<()> {
   // Example 6: Hide specific elements
   println!("\n📍 Example 6: Route only (no stats)");
   let mut config = RouteVideoConfig::default();
+  config.fit_file = "source/car.fit".to_string();
+  config.background_image = "source/car.jpg".to_string();
+  config.output_file = "outputs/example6_route_only.mp4".to_string();
   config.show_bottom_bar = false; // Hide pace/distance bar
   config.show_lap_data = false; // Hide lap statistics
   measure("Route only", || {
