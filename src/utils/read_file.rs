@@ -1,7 +1,7 @@
 use crate::types::fit_data::{LapData, RouteData};
 use crate::utils::converter::{semicircles_to_degrees, speed_to_pace};
 use anyhow::Result;
-use fitparser::{Value, profile::MesgNum};
+use fitparser::{profile::MesgNum, Value};
 use std::fs::File;
 
 pub fn fit_reader(file_path: &str) -> Result<(RouteData, LapData)> {
