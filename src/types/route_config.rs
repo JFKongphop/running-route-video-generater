@@ -400,3 +400,120 @@ impl RouteVideoConfig {
     }
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_color_to_bgra() {
+    assert_eq!(Color::Red.to_bgra(), [0.0, 0.0, 255.0, 0.0]);
+    assert_eq!(Color::Green.to_bgra(), [0.0, 255.0, 0.0, 0.0]);
+    assert_eq!(Color::Blue.to_bgra(), [255.0, 0.0, 0.0, 0.0]);
+    assert_eq!(Color::White.to_bgra(), [255.0, 255.0, 255.0, 0.0]);
+    assert_eq!(Color::Black.to_bgra(), [0.0, 0.0, 0.0, 0.0]);
+  }
+
+  #[test]
+  fn test_route_scale_presets() {
+    let default = RouteScale::default();
+    assert_eq!(default.scale, 0.2);
+    assert_eq!(default.offset_x_percent, 0.1);
+    assert_eq!(default.offset_y_percent, 0.1);
+
+    let centered = RouteScale::centered();
+    assert_eq!(centered.scale, 0.4);
+    assert_eq!(centered.offset_x_percent, 0.3);
+    assert_eq!(centered.offset_y_percent, 0.3);
+
+    let large = RouteScale::large();
+    assert_eq!(large.scale, 0.7);
+    assert_eq!(large.offset_x_percent, 0.15);
+    assert_eq!(large.offset_y_percent, 0.15);
+  }
+
+  #[test]
+  fn test_route_scale_custom() {
+    let custom = RouteScale::new(0.5, 0.2, 0.3);
+    assert_eq!(custom.scale, 0.5);
+    assert_eq!(custom.offset_x_percent, 0.2);
+    assert_eq!(custom.offset_y_percent, 0.3);
+  }
+
+  #[test]
+  fn test_lap_data_position_percentages() {
+    let config = LapDataConfig::default();
+    
+    // Positions should be between 0.0 and 1.0
+    assert!(config.position.0 >= 0.0 && config.position.0 <= 1.0);
+    assert!(config.position.1 >= 0.0 && config.position.1 <= 1.0);
+    
+    // Calculate pixel positions for 1920x1080
+    let x = config.position.0 * 1920.0;
+    let y = config.position.1 * 1080.0;
+    
+    assert!(x >= 0.0 && x <= 1920.0);
+    assert!(y >= 0.0 && y <= 1080.0);
+  }
+
+  #[test]
+  fn test_pace_dist_config() {
+    let default = PaceDistConfig::default();
+    assert!(default.show_pace);
+    assert!(default.show_distance);
+
+    let pace_only = PaceDistConfig::pace_only();
+    assert!(pace_only.show_pace);
+    assert!(!pace_only.show_distance);
+  }
+
+  #[test]
+  fn test_route_video_config_presets() {
+    let default = RouteVideoConfig::default();
+    assert_eq!(default.show_bottom_bar, true);
+    assert_eq!(default.show_route, true);
+    assert_eq!(default.show_lap_data, true);
+    assert_eq!(default.fit_file, "source/car.fit");
+    assert_eq!(default.background_image, "source/car.jpg");
+    assert_eq!(default.output_file, "outputs/car.mp4");
+
+    let minimalist = RouteVideoConfig::minimalist();
+    assert!(minimalist.show_bottom_bar);
+
+    let neon = RouteVideoConfig::neon();
+    assert!(neon.show_route);
+  }
+
+  #[test]
+  fn test_route_video_config_custom() {
+    let config = RouteVideoConfig::new(
+      RouteScale::new(0.5, 0.1, 0.2),
+      RouteColor::default(),
+      PaceDistConfig::default(),
+      LapDataConfig::default(),
+      true,
+      false,
+      true,
+      "test.fit".to_string(),
+      "test.jpg".to_string(),
+      "test.mp4".to_string(),
+    );
+
+    assert_eq!(config.show_route, false);
+    assert_eq!(config.fit_file, "test.fit");
+    assert_eq!(config.background_image, "test.jpg");
+    assert_eq!(config.output_file, "test.mp4");
+  }
+
+  #[test]
+  fn test_visibility_flags() {
+    let mut config = RouteVideoConfig::default();
+    config.show_bottom_bar = false;
+    config.show_route = false;
+    config.show_lap_data = false;
+
+    assert!(!config.show_bottom_bar);
+    assert!(!config.show_route);
+    assert!(!config.show_lap_data);
+  }
+}
