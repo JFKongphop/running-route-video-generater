@@ -1,7 +1,18 @@
 use anyhow::Result;
-use opencv::{core, prelude::*, videoio};
+use opencv::{core::{self, Mat}, imgcodecs, videoio};
 
-pub fn image_creator() {}
+pub fn image_creator(
+  output_file: &str,
+  image: &Mat,
+) -> Result<()> {
+  imgcodecs::imwrite(
+    output_file,
+    image,
+    &core::Vector::new(),
+  )?;
+
+  Ok(())
+}
 
 pub fn video_creator(
   width: i32,

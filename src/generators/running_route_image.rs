@@ -1,11 +1,12 @@
 use crate::types::fit_data::RouteData;
+use crate::utils::creator::image_creator;
 use crate::utils::{
   converter::{get_bounds, load_and_resize_image},
   element_drawer::Drawer,
   read_file::fit_reader,
 };
 use anyhow::Result;
-use opencv::{core, imgcodecs, imgproc, prelude::*};
+use opencv::{core, imgproc, prelude::*};
 
 pub fn generate_running_route_image(
   route_scale: f64,
@@ -73,8 +74,6 @@ pub fn generate_running_route_image(
 
   // Draw route path
   let red_color = drawer.color([0.0, 0.0, 255.0, 0.0]);
-  let green_color = drawer.color([0.0, 255.0, 0.0, 0.0]);
-
   let pts = core::Vector::<core::Point>::from_iter(pixel_points.clone());
   let mut all_pts = core::Vector::<core::Vector<core::Point>>::new();
   all_pts.push(pts);
@@ -89,12 +88,7 @@ pub fn generate_running_route_image(
     0,
   )?;
 
-  // Save image
-  imgcodecs::imwrite(
-    output_file,
-    &route_image,
-    &core::Vector::new(),
-  )?;
+  image_creator(output_file, &route_image)?;
 
   println!(
     "✅ Image created: {} with {} points",

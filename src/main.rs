@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use anyhow::Result;
 use runarium::generators::route_video::{
   generate_progressive_route, generate_progressive_route_with_config,
@@ -73,12 +75,12 @@ fn main() -> Result<()> {
     //   route_scale.offset_x_percent,
     //   route_scale.offset_y_percent,
     // );
-    generate_progressive_route_with_config(config)
-    // generate_running_route_image(
-    //   route_scale.scale,
-    //   route_scale.offset_x_percent,
-    //   route_scale.offset_y_percent,
-    // )
+    // generate_progressive_route_with_config(config)
+    generate_running_route_image(
+      route_scale.scale,
+      route_scale.offset_x_percent,
+      route_scale.offset_y_percent,
+    )
   })?;
 
   Ok(())
