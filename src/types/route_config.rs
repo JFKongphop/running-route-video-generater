@@ -114,6 +114,8 @@ pub struct PaceDistConfig {
   pub font_scale: f64,
   /// Thickness of the text
   pub thickness: i32,
+  /// Font family for text
+  pub font: Font,
   /// Position for the pace/distance bar (None = auto)
   pub position: Option<(i32, i32)>,
   /// Whether to show pace
@@ -127,6 +129,7 @@ impl PaceDistConfig {
   pub fn new(
     font_scale: f64,
     thickness: i32,
+    font: Font,
     position: Option<(i32, i32)>,
     show_pace: bool,
     show_distance: bool,
@@ -134,6 +137,7 @@ impl PaceDistConfig {
     Self {
       font_scale,
       thickness,
+      font,
       position,
       show_pace,
       show_distance,
@@ -145,6 +149,7 @@ impl PaceDistConfig {
     Self {
       font_scale: 0.5,
       thickness: 1,
+      font: Font::Simplex,
       position: None,
       show_pace: true,
       show_distance: true,
@@ -156,6 +161,7 @@ impl PaceDistConfig {
     Self {
       font_scale: 0.8,
       thickness: 2,
+      font: Font::Duplex,
       position: None,
       show_pace: true,
       show_distance: true,
@@ -167,6 +173,7 @@ impl PaceDistConfig {
     Self {
       font_scale: 0.5,
       thickness: 1,
+      font: Font::Simplex,
       position: None,
       show_pace: true,
       show_distance: false,
@@ -215,13 +222,61 @@ impl Color {
   }
 }
 
+/// Font family options for text rendering
+#[derive(Debug, Clone, Copy)]
+pub enum Font {
+  /// Normal size sans-serif font
+  Simplex,
+  /// Small size sans-serif font
+  Plain,
+  /// Normal size sans-serif font (more complex than Simplex)
+  Duplex,
+  /// Normal size serif font
+  Complex,
+  /// Normal size serif font (more complex than Complex)
+  Triplex,
+  /// Smaller font than Complex
+  ComplexSmall,
+  /// Script style font
+  ScriptSimplex,
+  /// Script style font (more complex than ScriptSimplex)
+  ScriptComplex,
+  /// Italic font style
+  Italic,
+}
+
+impl Font {
+  /// Get OpenCV font constant
+  pub fn to_opencv(&self) -> i32 {
+    match self {
+      Font::Simplex => 0,        // FONT_HERSHEY_SIMPLEX
+      Font::Plain => 1,           // FONT_HERSHEY_PLAIN
+      Font::Duplex => 2,          // FONT_HERSHEY_DUPLEX
+      Font::Complex => 3,         // FONT_HERSHEY_COMPLEX
+      Font::Triplex => 4,         // FONT_HERSHEY_TRIPLEX
+      Font::ComplexSmall => 5,    // FONT_HERSHEY_COMPLEX_SMALL
+      Font::ScriptSimplex => 6,   // FONT_HERSHEY_SCRIPT_SIMPLEX
+      Font::ScriptComplex => 7,   // FONT_HERSHEY_SCRIPT_COMPLEX
+      Font::Italic => 16,         // FONT_ITALIC (can be combined with others)
+    }
+  }
+}
+
 /// Configuration for lap statistics panel
 #[derive(Debug, Clone)]
 pub struct LapDataConfig {
   /// Position of the lap panel as percentage (x_percent, y_percent) where 0.0-1.0
   pub position: (f64, f64),
+  /// Font scale (fixed at 0.5)
+  pub font_scale: f64,
+  /// Text thickness (fixed at 1)
+  pub thickness: i32,
+  /// Font family for text
+  pub font: Font,
   /// Text color for lap data
   pub text_color: Color,
+  /// Maximum width for pace bars (fixed at 200)
+  pub bar_max_width: i32,
   /// Whether to show heart rate
   pub show_heart_rate: bool,
   /// Whether to show stride length
@@ -232,17 +287,24 @@ pub struct LapDataConfig {
 
 impl LapDataConfig {
   /// Creates a new LapDataConfig with custom settings
-  /// Note: font_scale (0.5), thickness (1), and bar_max_width (200) are fixed
   pub fn new(
     position: (f64, f64),
+    font_scale: f64,
+    thickness: i32,
+    font: Font,
     text_color: Color,
+    bar_max_width: i32,
     show_heart_rate: bool,
     show_stride_length: bool,
     show_pace_bars: bool,
   ) -> Self {
     Self {
       position,
+      font_scale,
+      thickness,
+      font,
       text_color,
+      bar_max_width,
       show_heart_rate,
       show_stride_length,
       show_pace_bars,
@@ -253,7 +315,11 @@ impl LapDataConfig {
   pub fn default() -> Self {
     Self {
       position: (0.5, 0.09), // 50% x, 9% y
+      font_scale: 0.5,
+      thickness: 1,
+      font: Font::Simplex,
       text_color: Color::White,
+      bar_max_width: 200,
       show_heart_rate: true,
       show_stride_length: true,
       show_pace_bars: true,
@@ -264,7 +330,11 @@ impl LapDataConfig {
   pub fn minimal() -> Self {
     Self {
       position: (0.5, 0.09), // 50% x, 9% y
+      font_scale: 0.5,
+      thickness: 1,
+      font: Font::Simplex,
       text_color: Color::White,
+      bar_max_width: 200,
       show_heart_rate: false,
       show_stride_length: false,
       show_pace_bars: true,
@@ -275,10 +345,49 @@ impl LapDataConfig {
   pub fn detailed() -> Self {
     Self {
       position: (0.5, 0.07), // 50% x, 7% y
+      font_scale: 0.5,
+      thickness: 1,
+      font: Font::Simplex,
       text_color: Color::White,
+      bar_max_width: 200,
       show_heart_rate: true,
       show_stride_length: true,
       show_pace_bars: true,
+    }
+  }
+}
+
+/// File paths configuration
+#[derive(Debug, Clone)]
+pub struct FileConfig {
+  /// Path to FIT file
+  pub fit_file: String,
+  /// Path to background image
+  pub background_image: String,
+  /// Output video file path
+  pub output_file: String,
+}
+
+impl FileConfig {
+  /// Creates a new FileConfig with custom paths
+  pub fn new(
+    fit_file: String,
+    background_image: String,
+    output_file: String,
+  ) -> Self {
+    Self {
+      fit_file,
+      background_image,
+      output_file,
+    }
+  }
+
+  /// Creates default file configuration
+  pub fn default() -> Self {
+    Self {
+      fit_file: "source/car.fit".to_string(),
+      background_image: "source/car.jpg".to_string(),
+      output_file: "outputs/car.mp4".to_string(),
     }
   }
 }
@@ -294,18 +403,14 @@ pub struct RouteVideoConfig {
   pub pace_dist: PaceDistConfig,
   /// Lap statistics settings
   pub lap_data: LapDataConfig,
+  /// File paths configuration
+  pub file_config: FileConfig,
   /// Whether to show the bottom pace/distance bar
   pub show_bottom_bar: bool,
   /// Whether to show the progressive route animation
   pub show_route: bool,
   /// Whether to show the lap data panel
   pub show_lap_data: bool,
-  /// Path to FIT file
-  pub fit_file: String,
-  /// Path to background image
-  pub background_image: String,
-  /// Output video file path
-  pub output_file: String,
 }
 
 impl RouteVideoConfig {
@@ -315,24 +420,20 @@ impl RouteVideoConfig {
     colors: RouteColor,
     pace_dist: PaceDistConfig,
     lap_data: LapDataConfig,
+    file_config: FileConfig,
     show_bottom_bar: bool,
     show_route: bool,
     show_lap_data: bool,
-    fit_file: String,
-    background_image: String,
-    output_file: String,
   ) -> Self {
     Self {
       route_scale,
       colors,
       pace_dist,
       lap_data,
+      file_config,
       show_bottom_bar,
       show_route,
       show_lap_data,
-      fit_file,
-      background_image,
-      output_file,
     }
   }
 
@@ -346,9 +447,7 @@ impl RouteVideoConfig {
       show_bottom_bar: true,
       show_route: true,
       show_lap_data: true,
-      fit_file: "source/car.fit".to_string(),
-      background_image: "source/car.jpg".to_string(),
-      output_file: "outputs/car.mp4".to_string(),
+      file_config: FileConfig::default(),
     }
   }
 
@@ -362,9 +461,7 @@ impl RouteVideoConfig {
       show_bottom_bar: true,
       show_route: true,
       show_lap_data: true,
-      fit_file: "source/car.fit".to_string(),
-      background_image: "source/car.jpg".to_string(),
-      output_file: "outputs/car.mp4".to_string(),
+      file_config: FileConfig::default(),
     }
   }
 
@@ -378,9 +475,7 @@ impl RouteVideoConfig {
       show_bottom_bar: true,
       show_route: true,
       show_lap_data: true,
-      fit_file: "source/car.fit".to_string(),
-      background_image: "source/car.jpg".to_string(),
-      output_file: "outputs/car.mp4".to_string(),
+      file_config: FileConfig::default(),
     }
   }
 
@@ -394,9 +489,7 @@ impl RouteVideoConfig {
       show_bottom_bar: true,
       show_route: true,
       show_lap_data: true,
-      fit_file: "source/car.fit".to_string(),
-      background_image: "source/car.jpg".to_string(),
-      output_file: "outputs/car.mp4".to_string(),
+      file_config: FileConfig::default(),
     }
   }
 }
@@ -473,9 +566,9 @@ mod tests {
     assert_eq!(default.show_bottom_bar, true);
     assert_eq!(default.show_route, true);
     assert_eq!(default.show_lap_data, true);
-    assert_eq!(default.fit_file, "source/car.fit");
-    assert_eq!(default.background_image, "source/car.jpg");
-    assert_eq!(default.output_file, "outputs/car.mp4");
+    assert_eq!(default.file_config.fit_file, "source/car.fit");
+    assert_eq!(default.file_config.background_image, "source/car.jpg");
+    assert_eq!(default.file_config.output_file, "outputs/car.mp4");
 
     let minimalist = RouteVideoConfig::minimalist();
     assert!(minimalist.show_bottom_bar);
@@ -486,23 +579,27 @@ mod tests {
 
   #[test]
   fn test_route_video_config_custom() {
-    let config = RouteVideoConfig::new(
-      RouteScale::new(0.5, 0.1, 0.2),
-      RouteColor::default(),
-      PaceDistConfig::default(),
-      LapDataConfig::default(),
-      true,
-      false,
-      true,
+    let file_config = FileConfig::new(
       "test.fit".to_string(),
       "test.jpg".to_string(),
       "test.mp4".to_string(),
     );
 
+    let config = RouteVideoConfig::new(
+      RouteScale::new(0.5, 0.1, 0.2),
+      RouteColor::default(),
+      PaceDistConfig::default(),
+      LapDataConfig::default(),
+      file_config,
+      true,
+      false,
+      true,
+    );
+
     assert_eq!(config.show_route, false);
-    assert_eq!(config.fit_file, "test.fit");
-    assert_eq!(config.background_image, "test.jpg");
-    assert_eq!(config.output_file, "test.mp4");
+    assert_eq!(config.file_config.fit_file, "test.fit");
+    assert_eq!(config.file_config.background_image, "test.jpg");
+    assert_eq!(config.file_config.output_file, "test.mp4");
   }
 
   #[test]
