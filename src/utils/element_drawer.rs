@@ -1,4 +1,7 @@
-use crate::types::drawer_data::{PositionRect, Rect, SizeRect};
+use crate::types::{
+  drawer_data::{PositionRect, Rect, SizeRect},
+  route_config::Font,
+};
 use anyhow::Result;
 use opencv::{core, imgproc, prelude::*};
 
@@ -10,7 +13,6 @@ enum Align {
 pub struct Drawer {
   pub width: i32,
   pub height: i32,
-  pub font: i32,
   pub line: i32,
 }
 
@@ -19,7 +21,6 @@ impl Drawer {
     Self {
       width,
       height,
-      font: imgproc::FONT_HERSHEY_SIMPLEX,
       line: imgproc::LINE_AA,
     }
   }
@@ -50,11 +51,12 @@ impl Drawer {
     frame: &mut Mat,
     pace: &str,
     dist: &str,
+    font_scale: f64,
+    thickness: i32,
+    font: Font,
   ) -> Result<()> {
     // ----- draw background bar -----
-    let thickness = 2;
-    let font_scale = 0.8;
-    let text_size = self.text_size(dist, font_scale, thickness)?;
+    let text_size = self.text_size(dist, font_scale, thickness, font)?;
     let bar_height = text_size.height + 30;
     let rect = Rect {
       pos: PositionRect {
@@ -78,7 +80,7 @@ impl Drawer {
       let x = match align {
         Align::Left => margin,
         Align::Right => {
-          let size = self.text_size(text, font_scale, thickness)?;
+          let size = self.text_size(text, font_scale, thickness, font)?;
           self.width - size.width - margin
         }
       };
@@ -90,6 +92,7 @@ impl Drawer {
         y_text,
         font_scale,
         thickness,
+        font,
         white_color,
       )?;
     }
@@ -97,7 +100,7 @@ impl Drawer {
     Ok(())
   }
 
-  pub fn header(&self, frame: &mut Mat, x: i32, y: i32) -> Result<()> {
+  pub fn header(&self, frame: &mut Mat, x: i32, y: i32, font_scale: f64, thickness: i32, font: Font) -> Result<()> {
     let bluish_color = self.color([255.0, 255.0, 0.0, 0.0]);
     const LABELS: [(&str, i32); 4] = [
       ("KM  PACE", -20),
@@ -106,9 +109,7 @@ impl Drawer {
       ("LENGTH", 320),
     ];
 
-    let font_scale = 0.5;
     let y_start = y - 20;
-    let thickness = 2;
 
     for (label, offset) in LABELS {
       self.text(
@@ -118,6 +119,7 @@ impl Drawer {
         y_start,
         font_scale,
         thickness,
+        font,
         bluish_color,
       )?;
     }
@@ -133,13 +135,14 @@ impl Drawer {
     y: i32,
     font_scale: f64,
     thickness: i32,
+    font: Font,
     color: core::Scalar,
   ) -> Result<()> {
     imgproc::put_text(
       frame,
       text,
       core::Point::new(x, y),
-      self.font,
+      font.to_opencv(),
       font_scale,
       color,
       thickness,
@@ -169,11 +172,12 @@ impl Drawer {
     text: &str,
     font_scale: f64,
     thickness: i32,
+    font: Font,
   ) -> Result<core::Size> {
     let mut baseline = 0;
     let size = imgproc::get_text_size(
       text,
-      self.font,
+      font.to_opencv(),
       font_scale,
       thickness,
       &mut baseline,
