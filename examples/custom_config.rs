@@ -15,7 +15,7 @@
 use anyhow::Result;
 use runarium::generators::route_video::generate_progressive_route_with_config;
 use runarium::types::route_config::{
-  Color, LapDataConfig, PaceDistConfig, RouteColor, RouteScale,
+  Color, FileConfig, LapDataConfig, PaceDistConfig, RouteColor, RouteScale,
   RouteVideoConfig,
 };
 use runarium::utils::performance::measure;
@@ -26,9 +26,9 @@ fn main() -> Result<()> {
   // Example 1: Using preset configurations
   println!("📍 Example 1: Default configuration");
   let mut config = RouteVideoConfig::default();
-  config.fit_file = "source/car.fit".to_string();
-  config.background_image = "source/car.jpg".to_string();
-  config.output_file = "outputs/example1_default.mp4".to_string();
+  config.file_config.fit_file = "source/car.fit".to_string();
+  config.file_config.background_image = "source/car.jpg".to_string();
+  config.file_config.output_file = "outputs/example1_default.mp4".to_string();
   measure("Default config", || {
     generate_progressive_route_with_config(config)
   })?;
@@ -36,9 +36,9 @@ fn main() -> Result<()> {
   // Example 2: Minimalist configuration
   println!("\n📍 Example 2: Minimalist configuration");
   let mut config = RouteVideoConfig::minimalist();
-  config.fit_file = "source/car.fit".to_string();
-  config.background_image = "source/car.jpg".to_string();
-  config.output_file = "outputs/example2_minimalist.mp4".to_string();
+  config.file_config.fit_file = "source/car.fit".to_string();
+  config.file_config.background_image = "source/car.jpg".to_string();
+  config.file_config.output_file = "outputs/example2_minimalist.mp4".to_string();
   measure("Minimalist config", || {
     generate_progressive_route_with_config(config)
   })?;
@@ -46,9 +46,9 @@ fn main() -> Result<()> {
   // Example 3: Detailed configuration
   println!("\n📍 Example 3: Detailed configuration");
   let mut config = RouteVideoConfig::detailed();
-  config.fit_file = "source/car.fit".to_string();
-  config.background_image = "source/car.jpg".to_string();
-  config.output_file = "outputs/example3_detailed.mp4".to_string();
+  config.file_config.fit_file = "source/car.fit".to_string();
+  config.file_config.background_image = "source/car.jpg".to_string();
+  config.file_config.output_file = "outputs/example3_detailed.mp4".to_string();
   measure("Detailed config", || {
     generate_progressive_route_with_config(config)
   })?;
@@ -56,9 +56,9 @@ fn main() -> Result<()> {
   // Example 4: Neon theme
   println!("\n📍 Example 4: Neon theme");
   let mut config = RouteVideoConfig::neon();
-  config.fit_file = "source/car.fit".to_string();
-  config.background_image = "source/car.jpg".to_string();
-  config.output_file = "outputs/example4_neon.mp4".to_string();
+  config.file_config.fit_file = "source/car.fit".to_string();
+  config.file_config.background_image = "source/car.jpg".to_string();
+  config.file_config.output_file = "outputs/example4_neon.mp4".to_string();
   measure("Neon theme", || {
     generate_progressive_route_with_config(config)
   })?;
@@ -83,21 +83,31 @@ fn main() -> Result<()> {
 
   // Custom pace/distance display
   let pace_dist = PaceDistConfig::new(
-    0.7,  // Larger font (not used, fixed at 0.5)
-    2,    // Thicker text (not used, fixed at 1)
-    None, // Auto position
-    true, // Show pace
-    true, // Show distance
+    0.7,                          // Font scale
+    2,                            // Thickness
+    runarium::types::route_config::Font::Duplex, // Font style
+    None,                         // Auto position
+    true,                         // Show pace
+    true,                         // Show distance
   );
 
   // Custom lap data panel
-  // Note: font_scale, thickness, bar_max_width are fixed (0.5, 1, 200)
   let lap_data = LapDataConfig::new(
-    (0.5, 0.07),        // Position as percentage (50% x, 7% y)
-    Color::YellowGreen, // Text color from Color enum
-    true,               // Show heart rate
-    true,               // Show stride length
-    true,               // Show pace bars
+    (0.5, 0.07),                  // Position as percentage (50% x, 7% y)
+    0.5,                          // Font scale
+    1,                            // Thickness
+    runarium::types::route_config::Font::Simplex, // Font style
+    Color::YellowGreen,           // Text color from Color enum
+    200,                          // Bar max width
+    true,                         // Show heart rate
+    true,                         // Show stride length
+    true,                         // Show pace bars
+  );
+
+  let file_config = FileConfig::new(
+    "source/car.fit".to_string(),
+    "source/car.jpg".to_string(),
+    "outputs/example5_custom.mp4".to_string(),
   );
 
   let config = RouteVideoConfig::new(
@@ -105,12 +115,10 @@ fn main() -> Result<()> {
     colors,
     pace_dist,
     lap_data,
+    file_config,
     true, // show_bottom_bar
     true, // show_route
     true, // show_lap_data
-    "source/car.fit".to_string(),
-    "source/car.jpg".to_string(),
-    "outputs/example5_custom.mp4".to_string(),
   );
 
   measure("Custom config", || {
@@ -120,9 +128,9 @@ fn main() -> Result<()> {
   // Example 6: Hide specific elements
   println!("\n📍 Example 6: Route only (no stats)");
   let mut config = RouteVideoConfig::default();
-  config.fit_file = "source/car.fit".to_string();
-  config.background_image = "source/car.jpg".to_string();
-  config.output_file = "outputs/example6_route_only.mp4".to_string();
+  config.file_config.fit_file = "source/car.fit".to_string();
+  config.file_config.background_image = "source/car.jpg".to_string();
+  config.file_config.output_file = "outputs/example6_route_only.mp4".to_string();
   config.show_bottom_bar = false; // Hide pace/distance bar
   config.show_lap_data = false; // Hide lap statistics
   measure("Route only", || {

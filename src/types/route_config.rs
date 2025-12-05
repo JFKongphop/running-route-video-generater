@@ -385,9 +385,9 @@ impl FileConfig {
   /// Creates default file configuration
   pub fn default() -> Self {
     Self {
-      fit_file: "source/car.fit".to_string(),
-      background_image: "source/car.jpg".to_string(),
-      output_file: "outputs/car.mp4".to_string(),
+      fit_file: "source/data.fit".to_string(),
+      background_image: "source/bg.jpg".to_string(),
+      output_file: "outputs/video.mp4".to_string(),
     }
   }
 }

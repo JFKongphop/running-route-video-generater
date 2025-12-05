@@ -2,8 +2,9 @@ use anyhow::Result;
 use runarium::generators::route_video::{
   generate_progressive_route, generate_progressive_route_with_config,
 };
+use runarium::generators::running_route_image::generate_running_route_image;
 use runarium::types::route_config::{
-  Color, LapDataConfig, PaceDistConfig, RouteColor, RouteScale,
+  Color, FileConfig, Font, LapDataConfig, PaceDistConfig, RouteColor, RouteScale,
   RouteVideoConfig,
 };
 use runarium::utils::performance::measure;
@@ -26,21 +27,32 @@ fn main() -> Result<()> {
 
   // Configure pace and distance display
   let pace_dist = PaceDistConfig::new(
-    0.6,  // font_scale
-    2,    // thickness
-    None, // position (auto-calculated)
-    true, // show_pace
-    true, // show_distance
+    0.6,            // font_scale
+    2,              // thickness
+    Font::Simplex,  // font style
+    None,           // position (auto-calculated)
+    true,           // show_pace
+    true,           // show_distance
   );
 
   // Configure lap data panel
-  // Note: font_scale (0.5), thickness (1), and bar_max_width (200) are fixed
   let lap_data = LapDataConfig::new(
-    (0.5, 0.09),  // position (x_percent, y_percent)
-    Color::White, // text_color: Choose from Color enum
-    true,         // show_heart_rate
-    true,         // show_stride_length
-    true,         // show_pace_bars
+    (0.5, 0.09),    // position (x_percent, y_percent)
+    0.5,            // font_scale
+    1,              // thickness
+    Font::Simplex,  // font style
+    Color::White,   // text_color: Choose from Color enum
+    200,            // bar_max_width
+    true,           // show_heart_rate
+    true,           // show_stride_length
+    true,           // show_pace_bars
+  );
+
+  // Configure file paths
+  let file_config = FileConfig::new(
+    "source/car.fit".to_string(),
+    "source/car.jpg".to_string(),
+    "outputs/config.mp4".to_string(),
   );
 
   // Combine all configurations
@@ -49,21 +61,24 @@ fn main() -> Result<()> {
     colors,
     pace_dist,
     lap_data,
+    file_config,
     true,  // show_bottom_bar
     true,  // show_route
     true,  // show_lap_data
-    "source/car.fit".to_string(),      // fit_file
-    "source/car.jpg".to_string(),      // background_image
-    "outputs/config.mp4".to_string(),     // output_file
   );
 
   measure("Total execution", || {
-    generate_progressive_route(
-      route_scale.scale,
-      route_scale.offset_x_percent,
-      route_scale.offset_y_percent,
-    );
+    // generate_progressive_route(
+    //   route_scale.scale,
+    //   route_scale.offset_x_percent,
+    //   route_scale.offset_y_percent,
+    // );
     generate_progressive_route_with_config(config)
+    // generate_running_route_image(
+    //   route_scale.scale,
+    //   route_scale.offset_x_percent,
+    //   route_scale.offset_y_percent,
+    // )
   })?;
 
   Ok(())

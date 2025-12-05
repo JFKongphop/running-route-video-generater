@@ -2,7 +2,6 @@ use crate::types::fit_data::RouteData;
 use crate::utils::{
   converter::{get_bounds, load_and_resize_image},
   element_drawer::Drawer,
-  performance::processed,
   read_file::fit_reader,
 };
 use anyhow::Result;

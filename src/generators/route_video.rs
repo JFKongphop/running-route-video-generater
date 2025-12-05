@@ -1,23 +1,20 @@
-use crate::utils::{
+use crate::{types, utils::{
   converter::{get_bounds, load_and_resize_image},
   creator::video_creator,
   element_drawer::Drawer,
   performance::processed,
   read_file::fit_reader,
-};
+}};
 use crate::{
   types::{
     drawer_data::{PositionRect, Rect, SizeRect},
     fit_data::{LapData, RouteData},
-    route_config::{
-      LapDataConfig, PaceDistConfig, RouteColor, RouteScale, RouteVideoConfig,
-    },
+    route_config::RouteVideoConfig,
   },
   utils::converter::{convert_pace_to_sec, pace_percentage, string_space},
 };
 use anyhow::Result;
-use opencv::{core, imgproc, prelude::*, videoio};
-use std::time::Instant;
+use opencv::{core, imgproc, prelude::*};
 
 /// Generates an animated video of a running route with lap statistics overlay.
 ///
@@ -39,7 +36,6 @@ use std::time::Instant;
 /// - Current position marker (green dot)
 /// - Lap statistics panel (pace, heart rate, stride length)
 /// - Real-time pace and distance overlay
-
 pub fn generate_progressive_route(
   route_scale: f64,
   offset_x_percent: f64,
@@ -114,7 +110,7 @@ pub fn generate_progressive_route(
   let mut path_frame = resized.clone();
   let drawer = Drawer::new(width, height);
 
-  let font = imgproc::FONT_HERSHEY_SIMPLEX;
+  let font = types::route_config::Font::Simplex;
   let font_scale = 0.5;
   let thickness = 1;
 
@@ -131,18 +127,17 @@ pub fn generate_progressive_route(
     .expect("Failed to find min pace");
   let min_denominator = (min_val / 30.0).floor() * 30.0;
   let bar_max_width = 200;
-  let header_y = start_y - 20;
 
   /********** Create lap data **********/
   drawer
-    .header(&mut path_frame, start_x, start_y)
+    .header(&mut path_frame, start_x, start_y, font_scale, thickness, font)
     .expect("Failed to draw header!");
 
   let green_color = drawer.color([0.0, 255.0, 0.0, 0.0]);
   let white_color = drawer.color([255.0, 255.0, 255.0, 0.0]);
   let size_of_speeds = enhanced_avg_speed.len();
   for (i, pace) in enhanced_avg_speed.iter().enumerate() {
-    let size = drawer.text_size(pace, font_scale, thickness)?;
+    let size = drawer.text_size(pace, font_scale, thickness, font)?;
     let x = start_x - size.width / 2;
     let y = start_y + i as i32 * (size.height + 5);
 
@@ -155,6 +150,7 @@ pub fn generate_progressive_route(
         y,
         font_scale,
         thickness,
+        font,
         white_color,
       )
       .expect("Failed to draw pace");
@@ -168,6 +164,7 @@ pub fn generate_progressive_route(
         y,
         font_scale,
         thickness,
+        font,
         white_color,
       )
       .expect("Failed to draw heart rate");
@@ -182,6 +179,7 @@ pub fn generate_progressive_route(
         y,
         font_scale,
         thickness,
+        font,
         white_color,
       )
       .expect("Failed to draw stride length");
@@ -221,11 +219,16 @@ pub fn generate_progressive_route(
     if i < paces.len() && i < distances.len() {
       let pace_text = format!("Pace: {} min/km", paces[i]);
       let dist_text = format!("Dist: {:.2} km", distances[i] / 1000.0);
+      let font_scale = 0.8;
+      let thickness = 2;
 
       drawer.text_bar(
         &mut current_frame,
         &pace_text,
         &dist_text,
+        font_scale,
+        thickness,
+        font,
       )?;
     }
 
@@ -267,7 +270,7 @@ pub fn generate_progressive_route_with_config(
 ) -> Result<()> {
   /********** Read and extract data **********/
   #[rustfmt::skip]
-  let (route, lap) = fit_reader(&config.fit_file)?;
+  let (route, lap) = fit_reader(&config.file_config.fit_file)?;
   let RouteData {
     paces,
     gps_points: points,
@@ -288,7 +291,7 @@ pub fn generate_progressive_route_with_config(
 
   /********** Get background image **********/
   let (bg_image, width, height) =
-    load_and_resize_image(&config.background_image, 1080)?;;
+    load_and_resize_image(&config.file_config.background_image, 1080)?;
 
   /********** Coordinate normalization to image space **********/
   let to_px = |lat: f64, lon: f64| -> core::Point {
@@ -318,7 +321,7 @@ pub fn generate_progressive_route_with_config(
     .map(|&(la, lo)| to_px(la, lo))
     .collect();
   let fps = (pixel_points.len() / 15) as f64;
-  let mut video = video_creator(width, height, fps, &config.output_file)?;
+  let mut video = video_creator(width, height, fps, &config.file_config.output_file)?;
 
   /********** Initialized frame **********/
   let mut resized = Mat::default();
@@ -350,20 +353,15 @@ pub fn generate_progressive_route_with_config(
   /********** Create lap data **********/
   if config.show_lap_data {
     drawer
-      .header(&mut path_frame, start_x, start_y)
+      .header(&mut path_frame, start_x, start_y, config.lap_data.font_scale, config.lap_data.thickness, config.lap_data.font)
       .expect("Failed to draw header!");
 
     let text_color = drawer.color(config.lap_data.text_color.to_bgra());
     let bar_color = drawer.color(config.colors.lap_bars);
     let size_of_speeds = enhanced_avg_speed.len();
 
-    // Fixed values
-    let font_scale = 0.5;
-    let thickness = 1;
-    let bar_max_width = 200;
-
     for (i, pace) in enhanced_avg_speed.iter().enumerate() {
-      let size = drawer.text_size(pace, font_scale, thickness)?;
+      let size = drawer.text_size(pace, config.lap_data.font_scale, config.lap_data.thickness, config.lap_data.font)?;
       let x = start_x - size.width / 2;
       let y = start_y + i as i32 * (size.height + 5);
 
@@ -375,8 +373,9 @@ pub fn generate_progressive_route_with_config(
           &pace_space,
           x,
           y,
-          font_scale,
-          thickness,
+          config.lap_data.font_scale,
+          config.lap_data.thickness,
+          config.lap_data.font,
           text_color,
         )
         .expect("Failed to draw pace");
@@ -390,8 +389,9 @@ pub fn generate_progressive_route_with_config(
             hr,
             x + 300,
             y,
-            font_scale,
-            thickness,
+            config.lap_data.font_scale,
+            config.lap_data.thickness,
+            config.lap_data.font,
             text_color,
           )
           .expect("Failed to draw heart rate");
@@ -407,8 +407,9 @@ pub fn generate_progressive_route_with_config(
             stride_length,
             x + 350,
             y,
-            font_scale,
-            thickness,
+            config.lap_data.font_scale,
+            config.lap_data.thickness,
+            config.lap_data.font,
             text_color,
           )
           .expect("Failed to draw stride length");
@@ -417,7 +418,7 @@ pub fn generate_progressive_route_with_config(
       // Draw pace bars if enabled
       if config.lap_data.show_pace_bars {
         let percent = pace_percentage(min_denominator, pace_seconds[i]);
-        let bar_width = (percent * bar_max_width as f32) as i32;
+        let bar_width = (percent * config.lap_data.bar_max_width as f32) as i32;
         let bar_height = size.height;
         let bar_x = x + size.width + 60;
         let bar_y = y - size.height;
@@ -479,6 +480,9 @@ pub fn generate_progressive_route_with_config(
           &mut current_frame,
           &pace_text,
           &dist_text,
+          config.pace_dist.font_scale,
+          config.pace_dist.thickness,
+          config.pace_dist.font,
         )?;
       }
     }
@@ -490,7 +494,7 @@ pub fn generate_progressive_route_with_config(
   video.release()?;
   println!(
     "✅ Video created: {} with {} points",
-    config.output_file,
+    config.file_config.output_file,
     pixel_points.len()
   );
   Ok(())
