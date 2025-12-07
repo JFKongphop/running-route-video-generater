@@ -9,6 +9,23 @@ use crate::utils::{
 use anyhow::Result;
 use opencv::{core, imgproc, prelude::*};
 
+/// Generates a static route image from FIT file data.
+///
+/// Creates an image showing the complete route path overlaid on a background image.
+///
+/// # Arguments
+/// * `route_scale` - Scale factor for route visualization (0.0-1.0 recommended)
+/// * `offset_x_percent` - Horizontal offset as percentage of image width
+/// * `offset_y_percent` - Vertical offset as percentage of image height
+///
+/// # Returns
+/// * `Ok(())` - Image successfully created and saved
+/// * `Err` - If FIT file reading, image loading, or drawing operations fail
+///
+/// # Output
+/// Creates `outputs/route.png` with:
+/// - Complete route path (red line)
+/// - Route overlaid on background image
 pub fn route_image(
   route_scale: f64,
   offset_x_percent: f64,
@@ -100,7 +117,27 @@ pub fn route_image(
   Ok(())
 }
 
-/// Generate a static route image with configuration
+/// Generates a static route image from FIT file data using custom configuration.
+///
+/// Creates an image showing the complete route path overlaid on a background image,
+/// with customizable colors, scaling, and positioning.
+///
+/// # Arguments
+/// * `config` - Route image configuration containing:
+///   - `route_scale` - Scale and positioning settings
+///   - `colors` - Color scheme for route elements
+///   - `file_config` - Input/output file paths
+///   - `line_thickness` - Thickness of the route line
+///
+/// # Returns
+/// * `Ok(())` - Image successfully created and saved
+/// * `Err` - If FIT file reading, image loading, or drawing operations fail
+///
+/// # Output
+/// Creates an image file at the configured output path with:
+/// - Complete route path with custom color and thickness
+/// - Route overlaid on background image
+/// - Customizable route positioning and scale
 pub fn route_image_with_config(
   config: RouteImageConfig,
 ) -> Result<()> {
