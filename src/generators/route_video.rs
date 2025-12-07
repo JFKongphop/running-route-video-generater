@@ -35,7 +35,7 @@ use opencv::{core, imgproc, prelude::*};
 /// - Current position marker (green dot)
 /// - Lap statistics panel (pace, heart rate, stride length)
 /// - Real-time pace and distance overlay
-pub fn generate_progressive_route(
+pub fn progressive_route(
   route_scale: f64,
   offset_x_percent: f64,
   offset_y_percent: f64,
@@ -259,12 +259,12 @@ pub fn generate_progressive_route(
 /// # Example
 /// ```no_run
 /// use runarium::types::route_config::RouteVideoConfig;
-/// use runarium::generators::route_video::generate_progressive_route_with_config;
+/// use runarium::generators::route_video::progressive_route_with_config;
 ///
 /// let config = RouteVideoConfig::default(1080);
-/// generate_progressive_route_with_config(config)?;
+/// progressive_route_with_config(config)?;
 /// ```
-pub fn generate_progressive_route_with_config(
+pub fn progressive_route_with_config(
   config: RouteVideoConfig,
 ) -> Result<()> {
   /********** Read and extract data **********/
