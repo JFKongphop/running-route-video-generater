@@ -354,7 +354,7 @@ ERROR: field size: 1 is not a multiple of the base type
 ## Performance
 
 Typical performance metrics:
-- Processing ~5000 GPS points: ~25-30 seconds
+- Processing ~5000 GPS points: ~12 seconds
 - Video encoding: Real-time (30 FPS)
 - Image generation: <1 second
 - Memory usage: ~100-200 MB
