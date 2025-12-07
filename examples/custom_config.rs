@@ -14,7 +14,7 @@
 /// Output: outputs/car.mp4
 use anyhow::Result;
 use runarium::generators::route_video::generate_progressive_route_with_config;
-use runarium::types::route_config::{
+use runarium::configs::video_config::{
   Color, FileConfig, LapDataConfig, PaceDistConfig, RouteColor, RouteScale,
   RouteVideoConfig,
 };
@@ -85,7 +85,7 @@ fn main() -> Result<()> {
   let pace_dist = PaceDistConfig::new(
     0.7,                          // Font scale
     2,                            // Thickness
-    runarium::types::route_config::Font::Duplex, // Font style
+    runarium::configs::video_config::Font::Duplex, // Font style
     None,                         // Auto position
     true,                         // Show pace
     true,                         // Show distance
@@ -96,7 +96,7 @@ fn main() -> Result<()> {
     (0.5, 0.07),                  // Position as percentage (50% x, 7% y)
     0.5,                          // Font scale
     1,                            // Thickness
-    runarium::types::route_config::Font::Simplex, // Font style
+    runarium::configs::video_config::Font::Simplex, // Font style
     Color::YellowGreen,           // Text color from Color enum
     200,                          // Bar max width
     true,                         // Show heart rate

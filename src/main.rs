@@ -1,13 +1,13 @@
 #![allow(unused)]
 
 use anyhow::Result;
-use runarium::generators::route_video::{
-  generate_progressive_route, generate_progressive_route_with_config,
+use runarium::configs::video_config::{
+  Color, FileConfig, Font, LapDataConfig, PaceDistConfig, RouteColor,
+  RouteScale, RouteVideoConfig,
 };
-use runarium::generators::running_route_image::generate_running_route_image;
-use runarium::types::route_config::{
-  Color, FileConfig, Font, LapDataConfig, PaceDistConfig, RouteColor, RouteScale,
-  RouteVideoConfig,
+use runarium::generators::route_image::route_image;
+use runarium::generators::route_video::{
+  progressive_route, progressive_route_with_config,
 };
 use runarium::utils::performance::measure;
 
@@ -29,25 +29,25 @@ fn main() -> Result<()> {
 
   // Configure pace and distance display
   let pace_dist = PaceDistConfig::new(
-    0.6,            // font_scale
-    2,              // thickness
-    Font::Simplex,  // font style
-    None,           // position (auto-calculated)
-    true,           // show_pace
-    true,           // show_distance
+    0.6,           // font_scale
+    2,             // thickness
+    Font::Simplex, // font style
+    None,          // position (auto-calculated)
+    true,          // show_pace
+    true,          // show_distance
   );
 
   // Configure lap data panel
   let lap_data = LapDataConfig::new(
-    (0.5, 0.09),    // position (x_percent, y_percent)
-    0.5,            // font_scale
-    1,              // thickness
-    Font::Simplex,  // font style
-    Color::White,   // text_color: Choose from Color enum
-    200,            // bar_max_width
-    true,           // show_heart_rate
-    true,           // show_stride_length
-    true,           // show_pace_bars
+    (0.5, 0.09),   // position (x_percent, y_percent)
+    0.5,           // font_scale
+    1,             // thickness
+    Font::Simplex, // font style
+    Color::White,  // text_color: Choose from Color enum
+    200,           // bar_max_width
+    true,          // show_heart_rate
+    true,          // show_stride_length
+    true,          // show_pace_bars
   );
 
   // Configure file paths
@@ -64,9 +64,9 @@ fn main() -> Result<()> {
     pace_dist,
     lap_data,
     file_config,
-    true,  // show_bottom_bar
-    true,  // show_route
-    true,  // show_lap_data
+    true, // show_bottom_bar
+    true, // show_route
+    true, // show_lap_data
   );
 
   measure("Total execution", || {
@@ -76,7 +76,7 @@ fn main() -> Result<()> {
     //   route_scale.offset_y_percent,
     // );
     // generate_progressive_route_with_config(config)
-    generate_running_route_image(
+    route_image(
       route_scale.scale,
       route_scale.offset_x_percent,
       route_scale.offset_y_percent,

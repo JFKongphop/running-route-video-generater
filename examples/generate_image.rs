@@ -9,7 +9,7 @@
 ///
 /// Output: outputs/running_route.png
 use anyhow::Result;
-use runarium::generators::running_route_image::generate_running_route_image;
+use runarium::generators::route_image::generate_running_route_image;
 
 fn main() -> Result<()> {
   println!("🗺️  Generating route image...\n");

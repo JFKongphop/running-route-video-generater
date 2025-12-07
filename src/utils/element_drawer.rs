@@ -1,6 +1,6 @@
-use crate::types::{
-  drawer_data::{PositionRect, Rect, SizeRect},
-  route_config::Font,
+use crate::{
+  configs::Font,
+  types::drawer_data::{PositionRect, Rect, SizeRect},
 };
 use anyhow::Result;
 use opencv::{core, imgproc, prelude::*};

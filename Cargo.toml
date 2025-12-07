@@ -2,7 +2,7 @@
 name = "runarium"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["JFKongphop <kongphopleo@gmail.com>"]
 description = "Generate animated videos from GPS running/cycling data with real-time statistics"
 repository = "https://github.com/JFKongphop/runarium"
 homepage = "https://github.com/JFKongphop/runarium"
@@ -28,4 +28,6 @@ imageproc = "0.25.0"
 opencv = "0.97.2"
 reqwest = { version = "0.12", features = ["blocking"] }
 divan = "0.1.21"
+tokio = { version = "1", features = ["full"] }
+futures = "0.3"
 
