@@ -1,17 +1,16 @@
-use crate::{types, utils::{
-  converter::{get_bounds, load_and_resize_image},
-  creator::video_creator,
-  element_drawer::Drawer,
-  performance::processed,
-  read_file::fit_reader,
-}};
 use crate::{
+  configs::video_config::RouteVideoConfig,
   types::{
     drawer_data::{PositionRect, Rect, SizeRect},
     fit_data::{LapData, RouteData},
-    route_config::RouteVideoConfig,
   },
-  utils::converter::{convert_pace_to_sec, pace_percentage, string_space},
+  utils::{
+    converter::{convert_pace_to_sec, get_bounds, load_and_resize_image, pace_percentage, string_space},
+    creator::video_creator,
+    element_drawer::Drawer,
+    performance::processed,
+    read_file::fit_reader,
+  },
 };
 use anyhow::Result;
 use opencv::{core, imgproc, prelude::*};
@@ -110,7 +109,7 @@ pub fn generate_progressive_route(
   let mut path_frame = resized.clone();
   let drawer = Drawer::new(width, height);
 
-  let font = types::route_config::Font::Simplex;
+  let font = crate::configs::video_config::Font::Simplex;
   let font_scale = 0.5;
   let thickness = 1;
 
