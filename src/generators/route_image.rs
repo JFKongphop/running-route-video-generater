@@ -1,4 +1,4 @@
-use crate::configs::image_config::RouteImageConfig;
+use crate::configs::RouteImageConfig;
 use crate::types::fit_data::RouteData;
 use crate::utils::creator::image_creator;
 use crate::utils::{
@@ -138,9 +138,7 @@ pub fn route_image(
 /// - Complete route path with custom color and thickness
 /// - Route overlaid on background image
 /// - Customizable route positioning and scale
-pub fn route_image_with_config(
-  config: RouteImageConfig,
-) -> Result<()> {
+pub fn route_image_with_config(config: RouteImageConfig) -> Result<()> {
   // Read FIT file
   let (route, _lap) = fit_reader(&config.file_config.fit_file)?;
   let RouteData {
@@ -153,8 +151,10 @@ pub fn route_image_with_config(
   let ((lat_min, lat_max), (lon_min, lon_max)) = get_bounds(&points);
 
   // -------- Load background image ----------
-  let (bg_image, width, height) =
-    load_and_resize_image(&config.file_config.background_image, 1080)?;
+  let (bg_image, width, height) = load_and_resize_image(
+    &config.file_config.background_image,
+    1080,
+  )?;
 
   // --- Coordinate normalization to image space ---
   let to_px = |lat: f64, lon: f64| -> core::Point {
@@ -169,9 +169,11 @@ pub fn route_image_with_config(
       0.5
     };
 
-    let x = ((config.route_scale.offset_x_percent + nx * config.route_scale.scale)
+    let x = ((config.route_scale.offset_x_percent
+      + nx * config.route_scale.scale)
       * width as f64) as i32;
-    let y = ((config.route_scale.offset_y_percent + (1.0 - ny) * config.route_scale.scale)
+    let y = ((config.route_scale.offset_y_percent
+      + (1.0 - ny) * config.route_scale.scale)
       * width as f64) as i32;
     core::Point::new(x, y)
   };
@@ -210,7 +212,10 @@ pub fn route_image_with_config(
   )?;
 
   // Save image
-  image_creator(&config.file_config.output_file, &route_image)?;
+  image_creator(
+    &config.file_config.output_file,
+    &route_image,
+  )?;
 
   println!(
     "✅ Image created: {} with {} points",

@@ -1,5 +1,5 @@
 use crate::{
-  configs::video_config::RouteVideoConfig,
+  configs::RouteVideoConfig,
   types::{
     drawer_data::{PositionRect, Rect, SizeRect},
     fit_data::{LapData, RouteData},
