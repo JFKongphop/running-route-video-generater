@@ -138,7 +138,7 @@ pub fn route_image(
 /// - Complete route path with custom color and thickness
 /// - Route overlaid on background image
 /// - Customizable route positioning and scale
-pub fn route_image_with_config(config: RouteImageConfig) -> Result<()> {
+pub fn image_route_with_config(config: RouteImageConfig) -> Result<()> {
   // Read FIT file
   let (route, _lap) = fit_reader(&config.file_config.fit_file)?;
   let RouteData {
