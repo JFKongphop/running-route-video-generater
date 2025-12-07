@@ -32,7 +32,7 @@ pub fn route_image(
   offset_y_percent: f64,
 ) -> Result<()> {
   #[rustfmt::skip]
-  let (route, _lap) = fit_reader("source/car.fit")?;
+  let (route, _lap) = fit_reader("source/example.fit")?;
   let RouteData {
     paces: _,
     gps_points: points,
@@ -48,7 +48,7 @@ pub fn route_image(
 
   // -------- Use background image ----------
   let (bg_image, width, height) =
-    load_and_resize_image("source/car.jpg", 1080)?;
+    load_and_resize_image("source/example.jpg", 1080)?;
   let output_file = "outputs/route.png";
 
   // --- Coordinate normalization to image space ---

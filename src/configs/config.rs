@@ -135,8 +135,8 @@ impl FileConfig {
   /// Creates default FileConfig
   pub fn default() -> Self {
     Self {
-      fit_file: "source/car.fit".to_string(),
-      background_image: "source/car.jpg".to_string(),
+      fit_file: "source/example.fit".to_string(),
+      background_image: "source/example.jpg".to_string(),
       output_file: "outputs/route.mp4".to_string(),
     }
   }

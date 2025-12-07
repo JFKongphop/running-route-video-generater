@@ -51,10 +51,10 @@ fn main() -> Result<()> {
     true,          // show_pace_bars
   );
 
-  // Configure video file paths
+  // Configure file paths
   let video_file_config = FileConfig::new(
-    "source/car.fit".to_string(),
-    "source/car.jpg".to_string(),
+    "source/example.fit".to_string(),
+    "source/example.jpg".to_string(),
     "outputs/config.mp4".to_string(),
   );
 
@@ -72,9 +72,9 @@ fn main() -> Result<()> {
 
   // Configure image file paths
   let image_file_config =     FileConfig::new(
-    "source/car.fit".to_string(),
-    "source/car.jpg".to_string(),
-    "outputs/route_config.png".to_string(),
+    "source/example.fit".to_string(),
+    "source/example.jpg".to_string(),
+    "outputs/route.png".to_string(),
   );
 
   // Configure route image settings
@@ -91,7 +91,7 @@ fn main() -> Result<()> {
     //   route_scale.offset_x_percent,
     //   route_scale.offset_y_percent,
     // );
-    // progressive_route_with_config(config)
+    progressive_route_with_config(video_config);
     image_route_with_config(image_config)
   })?;
 

@@ -4,8 +4,8 @@
 /// with custom configuration.
 ///
 /// Required files:
-/// - source/car.fit (your GPS data)
-/// - source/car.jpg (background map image)
+/// - source/example.fit (your GPS data)
+/// - source/example.jpg (background map image)
 ///
 /// Output: outputs/video.mp4
 use anyhow::Result;
@@ -56,8 +56,8 @@ fn main() -> Result<()> {
 
   // Configure file paths
   let file_config = FileConfig::new(
-    "source/car.fit".to_string(),
-    "source/car.jpg".to_string(),
+    "source/example.fit".to_string(),
+    "source/example.jpg".to_string(),
     "outputs/video.mp4".to_string(),
   );
 

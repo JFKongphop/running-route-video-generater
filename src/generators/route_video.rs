@@ -30,7 +30,7 @@ use opencv::{core, imgproc, prelude::*};
 /// * `Err` - If FIT file reading, video encoding, or drawing operations fail
 ///
 /// # Output
-/// Creates `outputs/car.mp4` with:
+/// Creates `outputs/example.mp4` with:
 /// - Animated route drawing (red line)
 /// - Current position marker (green dot)
 /// - Lap statistics panel (pace, heart rate, stride length)
@@ -42,7 +42,7 @@ pub fn progressive_route(
 ) -> Result<()> {
   /********** Read and extract data **********/
   #[rustfmt::skip]
-  let (route, lap) = fit_reader("source/car.fit")?;
+  let (route, lap) = fit_reader("source/example.fit")?;
   let RouteData {
     paces,
     gps_points: points,
@@ -63,7 +63,7 @@ pub fn progressive_route(
 
   /********** Get backgrund image **********/
   let (bg_image, width, height) =
-    load_and_resize_image("source/car.jpg", 1080)?;
+    load_and_resize_image("source/example.jpg", 1080)?;
 
   /********** Coordinate normalization to image space **********/
   let to_px = |lat: f64, lon: f64| -> core::Point {

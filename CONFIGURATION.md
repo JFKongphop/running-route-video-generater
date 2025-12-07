@@ -55,8 +55,8 @@ fn main() -> Result<()> {
 
   // Configure file paths
   let file_config = FileConfig::new(
-    "source/car.fit".to_string(),
-    "source/car.jpg".to_string(),
+    "source/example.fit".to_string(),
+    "source/example.jpg".to_string(),
     "outputs/video.mp4".to_string(),
   );
 
@@ -103,8 +103,8 @@ fn main() -> Result<()> {
 
   // Configure file paths
   let file_config = FileConfig::new(
-    "source/car.fit".to_string(),
-    "source/car.jpg".to_string(),
+    "source/example.fit".to_string(),
+    "source/example.jpg".to_string(),
     "outputs/route.png".to_string(),
   );
 
