@@ -1,14 +1,17 @@
 # Runarium 🏃‍♂️
 
-A Rust library for generating animated videos from GPS running/cycling data. Convert your FIT files into beautiful route visualization videos with real-time statistics.
+A Rust library for generating animated videos and static images from GPS running/cycling data. Convert your FIT files into beautiful route visualizations with customizable configurations.
 
 ## Features
 
 - 📍 Parse GPS data from FIT files (Garmin, Polar, etc.)
 - 🎬 Generate animated route videos with progressive drawing
+- 🖼️ Generate static route images
 - 📊 Display real-time statistics (pace, heart rate, distance)
 - 🗺️ Overlay routes on custom background images
-- ⚡ Fast video encoding with OpenCV
+- 🎨 Fully customizable colors, fonts, and styling
+- ⚡ Fast rendering with OpenCV
+- ⚙️ Configuration-based API for easy customization
 
 ## Prerequisites
 
@@ -70,29 +73,86 @@ cargo add runarium
 
 ## Usage
 
-### Basic Example
+### Quick Start - Video Generation
 
 ```rust
-use runarium::generators::route_video::generate_progressive_route;
-use runarium::utils::performance::measure;
 use anyhow::Result;
+use runarium::configs::video_config::{
+  Color, FileConfig, Font, LapDataConfig, PaceDistConfig,
+  RouteColor, RouteScale, RouteVideoConfig,
+};
+use runarium::generators::route_video::progressive_route_with_config;
 
 fn main() -> Result<()> {
-    // Configure visualization parameters
-    let route_scale = 0.2;        // Scale factor for route (20% of original)
-    let offset_x_percent = 0.1;   // 10% horizontal offset
-    let offset_y_percent = 0.1;   // 10% vertical offset
+  // Configure route scale and position
+  let route_scale = RouteScale::new(0.2, 0.1, 0.1);
+  
+  // Configure colors (BGRA format)
+  let colors = RouteColor::new(
+    [0.0, 0.0, 255.0, 0.0],     // Red route line
+    [0.0, 255.0, 0.0, 0.0],     // Green position marker
+    [255.0, 255.0, 255.0, 0.0], // White text
+    [0.0, 165.0, 255.0, 0.0],   // Orange lap bars
+  );
+  
+  // Configure pace/distance display
+  let pace_dist = PaceDistConfig::new(
+    0.6, 2, Font::Simplex, None, true, true
+  );
+  
+  // Configure lap data panel
+  let lap_data = LapDataConfig::new(
+    (0.5, 0.09), 0.5, 1, Font::Simplex,
+    Color::White, 200, true, true, true
+  );
+  
+  // Set file paths
+  let file_config = FileConfig::new(
+    "source/example.fit".to_string(),
+    "source/example.jpg".to_string(),
+    "outputs/video.mp4".to_string(),
+  );
+  
+  // Create and run configuration
+  let config = RouteVideoConfig::new(
+    route_scale, colors, pace_dist, lap_data,
+    file_config, true, true, true
+  );
+  
+  progressive_route_with_config(config)?;
+  Ok(())
+}
+```
 
-    // Generate the video with performance measurement
-    measure("Video generation", || {
-        generate_progressive_route(
-            route_scale,
-            offset_x_percent,
-            offset_y_percent,
-        )
-    })?;
+### Quick Start - Static Image
 
-    Ok(())
+```rust
+use anyhow::Result;
+use runarium::configs::image_config::RouteImageConfig;
+use runarium::configs::video_config::{FileConfig, RouteColor, RouteScale};
+use runarium::generators::route_image::image_route_with_config;
+
+fn main() -> Result<()> {
+  let route_scale = RouteScale::new(0.2, 0.1, 0.1);
+  let colors = RouteColor::new(
+    [0.0, 0.0, 255.0, 0.0],
+    [0.0, 255.0, 0.0, 0.0],
+    [255.0, 255.0, 255.0, 0.0],
+    [0.0, 165.0, 255.0, 0.0],
+  );
+  
+  let file_config = FileConfig::new(
+    "source/example.fit".to_string(),
+    "source/example.jpg".to_string(),
+    "outputs/route.png".to_string(),
+  );
+  
+  let config = RouteImageConfig::new(
+    route_scale, colors, file_config, 2
+  );
+  
+  image_route_with_config(config)?;
+  Ok(())
 }
 ```
 
@@ -101,81 +161,112 @@ fn main() -> Result<()> {
 ```
 your-project/
 ├── source/
-│   ├── car.fit           # Your FIT file with GPS data
-│   └── map.png          # Background map image
+│   ├── example.fit       # Your FIT file with GPS data
+│   └── example.jpg       # Background map image
 └── outputs/
-    └── car.mp4          # Generated video (created automatically)
+    ├── video.mp4         # Generated video (created automatically)
+    └── route.png         # Generated image (created automatically)
 ```
 
-### Generate Static Route Image
+## Configuration
+
+See [CONFIGURATION.md](CONFIGURATION.md) for detailed configuration options including:
+- Route scaling and positioning
+- Color customization
+- Font styles
+- Lap data display options
+- Visibility controls
+
+### Available Colors
 
 ```rust
-use runarium::generators::running_route_image::generate_running_route_image;
-use anyhow::Result;
+Color::Black, Color::White, Color::Red, Color::Green, Color::Blue,
+Color::Orange, Color::Yellow, Color::Violet, Color::YellowGreen,
+Color::BlueGreen, Color::BlueViolet, Color::RedViolet,
+Color::RedOrange, Color::YellowOrange
+```
 
-fn main() -> Result<()> {
-    let route_scale = 0.2;
-    let offset_x_percent = 0.1;
-    let offset_y_percent = 0.1;
+### Available Fonts
 
-    generate_running_route_image(
-        route_scale,
-        offset_x_percent,
-        offset_y_percent,
-    )?;
+```rust
+Font::Simplex, Font::Plain, Font::Duplex, Font::Complex,
+Font::Triplex, Font::ComplexSmall, Font::ScriptSimplex,
+Font::ScriptComplex, Font::Italic
+```
 
-    Ok(())
-}
+## Examples
+
+Run the included examples:
+
+```bash
+# Generate a video with configuration
+cargo run --example video_config --release
+
+# Generate a static image with configuration
+cargo run --example image_config --release
 ```
 
 ## API Reference
 
-### Main Functions
+### Video Generation
 
-#### `generate_progressive_route`
+#### `progressive_route_with_config`
 
-Generates an animated video showing the route being drawn progressively.
+Generates an animated video showing the route being drawn progressively with full configuration control.
 
 ```rust
-pub fn generate_progressive_route(
-    route_scale: f64,
-    offset_x_percent: f64,
-    offset_y_percent: f64,
-) -> Result<()>
+pub fn progressive_route_with_config(config: RouteVideoConfig) -> Result<()>
 ```
 
-**Parameters:**
-- `route_scale`: Scale factor for route visualization (0.0-1.0 recommended)
-- `offset_x_percent`: Horizontal offset as percentage of image width (0.0-1.0)
-- `offset_y_percent`: Vertical offset as percentage of image height (0.0-1.0)
-
-**Returns:**
-- `Ok(())`: Video successfully created at `outputs/car.mp4`
-- `Err`: If FIT file reading, video encoding, or drawing operations fail
+**Configuration includes:**
+- Route scale and positioning (`RouteScale`)
+- Colors for route, markers, text, and bars (`RouteColor`)
+- Pace/distance display settings (`PaceDistConfig`)
+- Lap statistics panel settings (`LapDataConfig`)
+- File paths (`FileConfig`)
+- Visibility flags (show_bottom_bar, show_route, show_lap_data)
 
 **Output Features:**
-- Animated route drawing (red line)
-- Current position marker (green dot)
-- Lap statistics panel (pace, heart rate, stride length)
+- Animated route drawing
+- Current position marker
 - Real-time pace and distance overlay
+- Lap statistics panel with heart rate, stride length, and pace bars
 
-#### `generate_running_route_image`
+### Image Generation
 
-Generates a static image of the complete route.
+#### `image_route_with_config`
+
+Generates a static image of the complete route with customizable styling.
 
 ```rust
-pub fn generate_running_route_image(
+pub fn image_route_with_config(config: RouteImageConfig) -> Result<()>
+```
+
+**Configuration includes:**
+- Route scale and positioning (`RouteScale`)
+- Route line color (`RouteColor`)
+- File paths (`FileConfig`)
+- Line thickness
+
+### Legacy API
+
+Simple functions without configuration are still available:
+
+```rust
+// Video generation (simple)
+pub fn progressive_route(
+    route_scale: f64,
+    offset_x_percent: f64,
+    offset_y_percent: f64,
+) -> Result<()>
+
+// Image generation (simple)
+pub fn route_image(
     route_scale: f64,
     offset_x_percent: f64,
     offset_y_percent: f64,
 ) -> Result<()>
 ```
-
-**Parameters:** Same as `generate_progressive_route`
-
-**Returns:** 
-- `Ok(())`: Image successfully created at `outputs/running_route.png`
-- `Err`: If processing fails
 
 ### Utility Functions
 
@@ -190,75 +281,31 @@ measure("Operation name", || {
 })?;
 ```
 
-#### FIT File Reading
+## Project Structure
 
-```rust
-use runarium::utils::read_file::fit_reader;
-
-let (route_data, lap_data) = fit_reader("path/to/file.fit")?;
 ```
-
-## Customization
-
-### Adjust Video Parameters
-
-The generated video has the following default settings:
-- Frame rate: 30 FPS
-- Resolution: Based on input map image
-- Codec: H.264 (MP4V)
-- One frame per GPS point
-
-### Customize Colors and Styles
-
-You can modify the drawing colors and styles by using the `Drawer` utility:
-
-```rust
-use runarium::utils::element_drawer::Drawer;
-use opencv::core::Mat;
-
-let mut drawer = Drawer::new(&mut frame);
-
-// Custom colors (BGRA format)
-let red = drawer.color([0.0, 0.0, 255.0, 0.0]);
-let green = drawer.color([0.0, 255.0, 0.0, 0.0]);
-let blue = drawer.color([255.0, 0.0, 0.0, 0.0]);
-```
-
-## Examples
-
-### Example 1: Generate Video with Custom Scaling
-
-```rust
-use runarium::generators::route_video::generate_progressive_route;
-use anyhow::Result;
-
-fn main() -> Result<()> {
-    // Larger route, centered on map
-    generate_progressive_route(0.5, 0.25, 0.25)?;
-    Ok(())
-}
-```
-
-### Example 2: Batch Processing Multiple Routes
-
-```rust
-use runarium::generators::route_video::generate_progressive_route;
-use anyhow::Result;
-
-fn main() -> Result<()> {
-    let routes = vec![
-        ("route1.fit", 0.2, 0.1, 0.1),
-        ("route2.fit", 0.3, 0.2, 0.2),
-    ];
-
-    for (file, scale, x, y) in routes {
-        println!("Processing {}", file);
-        // Note: You'll need to modify the code to accept file paths
-        generate_progressive_route(scale, x, y)?;
-    }
-
-    Ok(())
-}
+runarium/
+├── src/
+│   ├── configs/          # Configuration types
+│   │   ├── config.rs     # Shared configs (RouteScale, RouteColor, FileConfig)
+│   │   ├── image_config.rs   # Image-specific config
+│   │   └── video_config.rs   # Video-specific config
+│   ├── generators/       # Main generation functions
+│   │   ├── route_image.rs    # Static image generation
+│   │   └── route_video.rs    # Animated video generation
+│   ├── types/            # Data types
+│   │   ├── drawer_data.rs    # Drawing utilities data
+│   │   └── fit_data.rs       # FIT file data structures
+│   └── utils/            # Utility functions
+│       ├── converter.rs      # Coordinate conversion
+│       ├── creator.rs        # Image/video creation
+│       ├── element_drawer.rs # Drawing utilities
+│       ├── performance.rs    # Performance measurement
+│       └── read_file.rs      # FIT file reading
+├── examples/
+│   ├── video_config.rs   # Video generation example
+│   └── image_config.rs   # Image generation example
+└── CONFIGURATION.md      # Detailed configuration guide
 ```
 
 ## Troubleshooting
@@ -309,7 +356,15 @@ ERROR: field size: 1 is not a multiple of the base type
 Typical performance metrics:
 - Processing ~5000 GPS points: ~25-30 seconds
 - Video encoding: Real-time (30 FPS)
+- Image generation: <1 second
 - Memory usage: ~100-200 MB
+
+## Module Overview
+
+- **configs**: Configuration types for customizing output
+- **generators**: Core functions for video and image generation
+- **types**: Data structures for FIT data and drawing
+- **utils**: Helper utilities for file I/O, conversion, and rendering
 
 ## Contributing
 
@@ -328,9 +383,14 @@ Built with:
 
 ## Roadmap
 
+- [x] Support for FIT file parsing
+- [x] Animated video generation
+- [x] Static image generation
+- [x] Customizable color schemes
+- [x] Configuration-based API
+- [x] Font customization
 - [ ] Support for multiple file formats (GPX, TCX)
-- [ ] Customizable color schemes
-- [ ] Configuration file support
 - [ ] Command-line interface
+- [ ] Preset configuration templates
 - [ ] Web-based visualization
 - [ ] Real-time preview
