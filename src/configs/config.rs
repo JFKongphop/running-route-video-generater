@@ -210,15 +210,15 @@ impl Font {
   /// Get OpenCV font constant
   pub fn to_opencv(&self) -> i32 {
     match self {
-      Font::Simplex => 0,        // FONT_HERSHEY_SIMPLEX
-      Font::Plain => 1,           // FONT_HERSHEY_PLAIN
-      Font::Duplex => 2,          // FONT_HERSHEY_DUPLEX
-      Font::Complex => 3,         // FONT_HERSHEY_COMPLEX
-      Font::Triplex => 4,         // FONT_HERSHEY_TRIPLEX
-      Font::ComplexSmall => 5,    // FONT_HERSHEY_COMPLEX_SMALL
-      Font::ScriptSimplex => 6,   // FONT_HERSHEY_SCRIPT_SIMPLEX
-      Font::ScriptComplex => 7,   // FONT_HERSHEY_SCRIPT_COMPLEX
-      Font::Italic => 16,         // FONT_ITALIC (can be combined with others)
+      Font::Simplex => 0,       // FONT_HERSHEY_SIMPLEX
+      Font::Plain => 1,         // FONT_HERSHEY_PLAIN
+      Font::Duplex => 2,        // FONT_HERSHEY_DUPLEX
+      Font::Complex => 3,       // FONT_HERSHEY_COMPLEX
+      Font::Triplex => 4,       // FONT_HERSHEY_TRIPLEX
+      Font::ComplexSmall => 5,  // FONT_HERSHEY_COMPLEX_SMALL
+      Font::ScriptSimplex => 6, // FONT_HERSHEY_SCRIPT_SIMPLEX
+      Font::ScriptComplex => 7, // FONT_HERSHEY_SCRIPT_COMPLEX
+      Font::Italic => 16,       // FONT_ITALIC (can be combined with others)
     }
   }
 }

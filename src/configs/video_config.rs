@@ -88,8 +88,6 @@ pub struct LapDataConfig {
   pub font: Font,
   /// Text color for lap data
   pub text_color: Color,
-  /// Maximum width for pace bars (fixed at 200)
-  pub bar_max_width: i32,
   /// Whether to show heart rate
   pub show_heart_rate: bool,
   /// Whether to show stride length
@@ -106,7 +104,6 @@ impl LapDataConfig {
     thickness: i32,
     font: Font,
     text_color: Color,
-    bar_max_width: i32,
     show_heart_rate: bool,
     show_stride_length: bool,
     show_pace_bars: bool,
@@ -117,7 +114,6 @@ impl LapDataConfig {
       thickness,
       font,
       text_color,
-      bar_max_width,
       show_heart_rate,
       show_stride_length,
       show_pace_bars,
@@ -132,7 +128,6 @@ impl LapDataConfig {
       thickness: 1,
       font: Font::Simplex,
       text_color: Color::White,
-      bar_max_width: 200,
       show_heart_rate: true,
       show_stride_length: true,
       show_pace_bars: true,
@@ -147,7 +142,6 @@ impl LapDataConfig {
       thickness: 1,
       font: Font::Simplex,
       text_color: Color::White,
-      bar_max_width: 200,
       show_heart_rate: false,
       show_stride_length: false,
       show_pace_bars: true,
@@ -162,7 +156,6 @@ impl LapDataConfig {
       thickness: 1,
       font: Font::Simplex,
       text_color: Color::White,
-      bar_max_width: 200,
       show_heart_rate: true,
       show_stride_length: true,
       show_pace_bars: true,
@@ -278,11 +271,26 @@ mod tests {
 
   #[test]
   fn test_color_to_bgra() {
-    assert_eq!(Color::Red.to_bgra(), [0.0, 0.0, 255.0, 0.0]);
-    assert_eq!(Color::Green.to_bgra(), [0.0, 255.0, 0.0, 0.0]);
-    assert_eq!(Color::Blue.to_bgra(), [255.0, 0.0, 0.0, 0.0]);
-    assert_eq!(Color::White.to_bgra(), [255.0, 255.0, 255.0, 0.0]);
-    assert_eq!(Color::Black.to_bgra(), [0.0, 0.0, 0.0, 0.0]);
+    assert_eq!(
+      Color::Red.to_bgra(),
+      [0.0, 0.0, 255.0, 0.0]
+    );
+    assert_eq!(
+      Color::Green.to_bgra(),
+      [0.0, 255.0, 0.0, 0.0]
+    );
+    assert_eq!(
+      Color::Blue.to_bgra(),
+      [255.0, 0.0, 0.0, 0.0]
+    );
+    assert_eq!(
+      Color::White.to_bgra(),
+      [255.0, 255.0, 255.0, 0.0]
+    );
+    assert_eq!(
+      Color::Black.to_bgra(),
+      [0.0, 0.0, 0.0, 0.0]
+    );
   }
 
   #[test]
@@ -314,15 +322,15 @@ mod tests {
   #[test]
   fn test_lap_data_position_percentages() {
     let config = LapDataConfig::default();
-    
+
     // Positions should be between 0.0 and 1.0
     assert!(config.position.0 >= 0.0 && config.position.0 <= 1.0);
     assert!(config.position.1 >= 0.0 && config.position.1 <= 1.0);
-    
+
     // Calculate pixel positions for 1920x1080
     let x = config.position.0 * 1920.0;
     let y = config.position.1 * 1080.0;
-    
+
     assert!(x >= 0.0 && x <= 1920.0);
     assert!(y >= 0.0 && y <= 1080.0);
   }
@@ -344,9 +352,18 @@ mod tests {
     assert_eq!(default.show_bottom_bar, true);
     assert_eq!(default.show_route, true);
     assert_eq!(default.show_lap_data, true);
-    assert_eq!(default.file_config.fit_file, "source/car.fit");
-    assert_eq!(default.file_config.background_image, "source/car.jpg");
-    assert_eq!(default.file_config.output_file, "outputs/car.mp4");
+    assert_eq!(
+      default.file_config.fit_file,
+      "source/car.fit"
+    );
+    assert_eq!(
+      default.file_config.background_image,
+      "source/car.jpg"
+    );
+    assert_eq!(
+      default.file_config.output_file,
+      "outputs/car.mp4"
+    );
 
     let minimalist = RouteVideoConfig::minimalist();
     assert!(minimalist.show_bottom_bar);
@@ -376,8 +393,14 @@ mod tests {
 
     assert_eq!(config.show_route, false);
     assert_eq!(config.file_config.fit_file, "test.fit");
-    assert_eq!(config.file_config.background_image, "test.jpg");
-    assert_eq!(config.file_config.output_file, "test.mp4");
+    assert_eq!(
+      config.file_config.background_image,
+      "test.jpg"
+    );
+    assert_eq!(
+      config.file_config.output_file,
+      "test.mp4"
+    );
   }
 
   #[test]
