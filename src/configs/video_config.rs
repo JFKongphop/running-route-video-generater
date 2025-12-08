@@ -363,15 +363,15 @@ mod tests {
     assert_eq!(default.show_lap_data, true);
     assert_eq!(
       default.file_config.fit_file,
-      "source/car.fit"
+      "source/example.fit"
     );
     assert_eq!(
       default.file_config.background_image,
-      "source/car.jpg"
+      "source/example.jpg"
     );
     assert_eq!(
       default.file_config.output_file,
-      "outputs/car.mp4"
+      "outputs/output.mp4"
     );
 
     let minimalist = RouteVideoConfig::minimalist();

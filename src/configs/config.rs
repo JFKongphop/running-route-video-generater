@@ -143,7 +143,7 @@ impl Default for FileConfig {
     Self {
       fit_file: "source/example.fit".to_string(),
       background_image: "source/example.jpg".to_string(),
-      output_file: "outputs/route.mp4".to_string(),
+      output_file: "outputs/output.mp4".to_string(),
     }
   }
 }
