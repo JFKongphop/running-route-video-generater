@@ -17,7 +17,7 @@ where
 }
 
 pub fn processed(i: usize, points: Vec<core::Point>) {
-  if (i + 1) % 100 == 0 {
+  if (i + 1).is_multiple_of(100) {
     println!(
       "Processed {}/{} points",
       i + 1,
