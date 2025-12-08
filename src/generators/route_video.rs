@@ -269,11 +269,11 @@ pub fn progressive_route(
 ///
 /// # Example
 /// ```no_run
-/// use runarium::types::route_config::RouteVideoConfig;
+/// use runarium::video_config::RouteVideoConfig;
 /// use runarium::generators::route_video::progressive_route_with_config;
 ///
-/// let config = RouteVideoConfig::default(1080);
-/// progressive_route_with_config(config)?;
+/// let config = RouteVideoConfig::default();
+/// progressive_route_with_config(config);
 /// ```
 pub fn progressive_route_with_config(config: RouteVideoConfig) -> Result<()> {
   // Read and extract data
