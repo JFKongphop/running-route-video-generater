@@ -27,8 +27,7 @@ impl PaceDistConfig {
     position: Option<(i32, i32)>,
     show_pace: bool,
     show_distance: bool,
-  )
--> Self {
+  ) -> Self {
     Self {
       font_scale,
       thickness,
