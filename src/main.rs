@@ -6,7 +6,7 @@ use runarium::configs::video_config::{
   Color, FileConfig, Font, LapDataConfig, PaceDistConfig, RouteColor,
   RouteScale, RouteVideoConfig,
 };
-use runarium::generators::route_image::{route_image, image_route_with_config};
+use runarium::generators::route_image::{image_route_with_config, route_image};
 use runarium::generators::route_video::{
   progressive_route, progressive_route_with_config,
 };
@@ -45,7 +45,6 @@ fn main() -> Result<()> {
     1,             // thickness
     Font::Simplex, // font style
     Color::White,  // text_color: Choose from Color enum
-    200,           // bar_max_width
     true,          // show_heart_rate
     true,          // show_stride_length
     true,          // show_pace_bars
@@ -60,10 +59,10 @@ fn main() -> Result<()> {
 
   // Combine all video configurations
   let video_config = RouteVideoConfig::new(
-    route_scale,
-    colors,
+    route_scale.clone(),
+    colors.clone(),
     pace_dist,
-    lap_data,
+    lap_data.clone(),
     video_file_config,
     true, // show_bottom_bar
     true, // show_route
@@ -71,18 +70,19 @@ fn main() -> Result<()> {
   );
 
   // Configure image file paths
-  let image_file_config =     FileConfig::new(
+  let image_file_config = FileConfig::new(
     "source/example.fit".to_string(),
     "source/example.jpg".to_string(),
     "outputs/route.png".to_string(),
   );
 
-  // Configure route image settings
-  let image_config = RouteImageConfig::new(
-    route_scale.clone(),
-    colors.clone(),
+  // Configure route image settings with lap data
+  let image_config = RouteImageConfig::with_lap_data(
+    route_scale,
+    colors,
     image_file_config,
     2, // line_thickness
+    lap_data,
   );
 
   measure("Total execution", || {
@@ -90,8 +90,8 @@ fn main() -> Result<()> {
     //   route_scale.scale,
     //   route_scale.offset_x_percent,
     //   route_scale.offset_y_percent,
-    // );
-    progressive_route_with_config(video_config);
+    // )
+    // progressive_route_with_config(video_config);
     image_route_with_config(image_config)
   })?;
 

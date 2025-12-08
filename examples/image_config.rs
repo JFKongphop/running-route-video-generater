@@ -1,7 +1,7 @@
 /// Example: Static Route Image Generation
 ///
 /// This example demonstrates how to generate a static route image
-/// with custom configuration.
+/// with custom configuration including optional lap data display.
 ///
 /// Required files:
 /// - source/example.fit (your GPS data)
@@ -10,7 +10,9 @@
 /// Output: outputs/route.png
 use anyhow::Result;
 use runarium::configs::image_config::RouteImageConfig;
-use runarium::configs::video_config::{FileConfig, RouteColor, RouteScale};
+use runarium::configs::video_config::{
+  Color, FileConfig, Font, LapDataConfig, RouteColor, RouteScale,
+};
 use runarium::generators::route_image::image_route_with_config;
 
 fn main() -> Result<()> {
@@ -36,12 +38,25 @@ fn main() -> Result<()> {
     "outputs/route.png".to_string(),
   );
 
-  // Create image configuration
-  let config = RouteImageConfig::new(
+  // Configure lap data panel (optional)
+  let lap_data = LapDataConfig::new(
+    (0.5, 0.09),   // position (x_percent, y_percent)
+    0.5,           // font_scale
+    1,             // thickness
+    Font::Simplex, // font style
+    Color::White,  // text_color
+    true,          // show_heart_rate
+    true,          // show_stride_length
+    true,          // show_pace_bars
+  );
+
+  // Create image configuration with lap data
+  let config = RouteImageConfig::with_lap_data(
     route_scale,
     colors,
     file_config,
     2, // line_thickness
+    lap_data,
   );
 
   image_route_with_config(config)?;

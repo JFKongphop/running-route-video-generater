@@ -1,15 +1,11 @@
 use anyhow::Result;
-use opencv::{core::{self, Mat}, imgcodecs, videoio};
+use opencv::{
+  core::{self, Mat},
+  imgcodecs, videoio,
+};
 
-pub fn image_creator(
-  output_file: &str,
-  image: &Mat,
-) -> Result<()> {
-  imgcodecs::imwrite(
-    output_file,
-    image,
-    &core::Vector::new(),
-  )?;
+pub fn image_creator(output_file: &str, image: &Mat) -> Result<()> {
+  imgcodecs::imwrite(output_file, image, &core::Vector::new())?;
 
   Ok(())
 }

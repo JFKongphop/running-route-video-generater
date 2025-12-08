@@ -101,10 +101,10 @@ mod tests {
     // Speed in m/s to pace in min/km
     // 3.33 m/s ≈ 5:00 min/km (12 km/h)
     assert_eq!(speed_to_pace(3.33), "5:00");
-    
+
     // 2.77 m/s ≈ 6:00 min/km (10 km/h)
     assert_eq!(speed_to_pace(2.77), "6:01");
-    
+
     // 5.0 m/s = 3:20 min/km (18 km/h)
     assert_eq!(speed_to_pace(5.0), "3:20");
   }
@@ -119,15 +119,15 @@ mod tests {
   fn test_semicircles_to_degrees() {
     // 0 semicircles = 0 degrees
     assert_eq!(semicircles_to_degrees(0), 0.0);
-    
+
     // i32::MAX semicircles ≈ 180 degrees
     let max_degrees = semicircles_to_degrees(i32::MAX);
     assert!(max_degrees > 179.9 && max_degrees < 180.0);
-    
+
     // Half of i32::MAX ≈ 90 degrees
     let half_max = semicircles_to_degrees(i32::MAX / 2);
     assert!(half_max > 89.9 && half_max < 90.0);
-    
+
     // Negative values
     let neg_degrees = semicircles_to_degrees(-i32::MAX);
     assert!(neg_degrees < -179.9 && neg_degrees > -180.0);
@@ -135,15 +135,10 @@ mod tests {
 
   #[test]
   fn test_get_bounds() {
-    let points = vec![
-      (10.0, 20.0),
-      (5.0, 25.0),
-      (15.0, 15.0),
-      (8.0, 30.0),
-    ];
-    
+    let points = vec![(10.0, 20.0), (5.0, 25.0), (15.0, 15.0), (8.0, 30.0)];
+
     let ((lat_min, lat_max), (lon_min, lon_max)) = get_bounds(&points);
-    
+
     assert_eq!(lat_min, 5.0);
     assert_eq!(lat_max, 15.0);
     assert_eq!(lon_min, 15.0);
@@ -154,7 +149,7 @@ mod tests {
   fn test_get_bounds_single_point() {
     let points = vec![(10.0, 20.0)];
     let ((lat_min, lat_max), (lon_min, lon_max)) = get_bounds(&points);
-    
+
     assert_eq!(lat_min, 10.0);
     assert_eq!(lat_max, 10.0);
     assert_eq!(lon_min, 20.0);
@@ -165,12 +160,21 @@ mod tests {
   fn test_string_space() {
     // Testing with size=100 (3 digits), various indices
     // max_digits=3, current_digits=1 -> padding = 3-1+3 = 5 spaces
-    assert_eq!(string_space(100, 1, "5:00"), "1     5:00");
+    assert_eq!(
+      string_space(100, 1, "5:00"),
+      "1     5:00"
+    );
     // max_digits=3, current_digits=2 -> padding = 3-2+3 = 4 spaces
-    assert_eq!(string_space(100, 10, "5:30"), "10    5:30");
+    assert_eq!(
+      string_space(100, 10, "5:30"),
+      "10    5:30"
+    );
     // max_digits=3, current_digits=3 -> padding = 3-3+3 = 3 spaces
-    assert_eq!(string_space(100, 100, "6:00"), "100   6:00");
-    
+    assert_eq!(
+      string_space(100, 100, "6:00"),
+      "100   6:00"
+    );
+
     // Testing with size=10 (2 digits)
     // max_digits=2, current_digits=1 -> padding = 2-1+3 = 4 spaces
     assert_eq!(string_space(10, 1, "4:30"), "1    4:30");

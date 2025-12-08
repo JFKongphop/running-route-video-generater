@@ -47,7 +47,6 @@ fn main() -> Result<()> {
     1,             // thickness
     Font::Simplex, // font style
     Color::White,  // text_color
-    200,           // bar_max_width
     true,          // show_heart_rate
     true,          // show_stride_length
     true,          // show_pace_bars
@@ -108,12 +107,64 @@ fn main() -> Result<()> {
     "outputs/route.png".to_string(),
   );
 
-  // Create image configuration
+  // Create image configuration (simple, no lap data)
   let config = RouteImageConfig::new(
     route_scale,
     colors,
     file_config,
     2, // line_thickness
+  );
+
+  image_route_with_config(config)?;
+  Ok(())
+}
+```
+
+### Generate Static Route Image with Lap Data
+
+```rust
+use anyhow::Result;
+use runarium::configs::image_config::RouteImageConfig;
+use runarium::configs::video_config::{
+  Color, FileConfig, Font, LapDataConfig, RouteColor, RouteScale,
+};
+use runarium::generators::route_image::image_route_with_config;
+
+fn main() -> Result<()> {
+  let route_scale = RouteScale::new(0.2, 0.1, 0.1);
+  
+  let colors = RouteColor::new(
+    [0.0, 0.0, 255.0, 0.0],
+    [0.0, 255.0, 0.0, 0.0],
+    [255.0, 255.0, 255.0, 0.0],
+    [0.0, 165.0, 255.0, 0.0],
+  );
+  
+  let file_config = FileConfig::new(
+    "source/example.fit".to_string(),
+    "source/example.jpg".to_string(),
+    "outputs/route_with_laps.png".to_string(),
+  );
+
+  // Configure lap data panel
+  let lap_data = LapDataConfig::new(
+    (0.5, 0.09),   // position
+    0.5,           // font_scale
+    1,             // thickness
+    Font::Simplex, // font
+    Color::White,  // text_color
+    true,          // show_heart_rate
+    true,          // show_stride_length
+    true,          // show_pace_bars
+  );
+
+  // Create image configuration with lap data
+  let config = RouteImageConfig::with_lap_data(
+    route_scale,
+    colors,
+    file_config,
+    2, // line_thickness
+    lap_data,
   );
 
   image_route_with_config(config)?;

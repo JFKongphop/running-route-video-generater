@@ -48,7 +48,6 @@ fn main() -> Result<()> {
     1,             // thickness
     Font::Simplex, // font style
     Color::White,  // text_color
-    200,           // bar_max_width
     true,          // show_heart_rate
     true,          // show_stride_length
     true,          // show_pace_bars

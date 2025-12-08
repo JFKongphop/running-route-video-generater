@@ -100,7 +100,15 @@ impl Drawer {
     Ok(())
   }
 
-  pub fn header(&self, frame: &mut Mat, x: i32, y: i32, font_scale: f64, thickness: i32, font: Font) -> Result<()> {
+  pub fn header(
+    &self,
+    frame: &mut Mat,
+    x: i32,
+    y: i32,
+    font_scale: f64,
+    thickness: i32,
+    font: Font,
+  ) -> Result<()> {
     let bluish_color = self.color([255.0, 255.0, 0.0, 0.0]);
     const LABELS: [(&str, i32); 4] = [
       ("KM   PACE", -20),
