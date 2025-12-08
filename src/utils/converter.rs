@@ -15,7 +15,7 @@ pub fn semicircles_to_degrees(semicircles: i32) -> f64 {
   (semicircles as f64) * (180.0 / (i32::MAX as f64 + 1.0))
 }
 
-pub fn get_bounds(points: &Vec<(f64, f64)>) -> ((f64, f64), (f64, f64)) {
+pub fn get_bounds(points: &[(f64, f64)]) -> ((f64, f64), (f64, f64)) {
   let (lat_min, lat_max) = points.iter().fold(
     (f64::INFINITY, f64::NEG_INFINITY),
     |(mn, mx), (lat, _)| (mn.min(*lat), mx.max(*lat)),

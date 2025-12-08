@@ -19,15 +19,6 @@ impl RouteScale {
     }
   }
 
-  /// Creates a default RouteScale (small route, top-left corner)
-  pub fn default() -> Self {
-    Self {
-      scale: 0.2,
-      offset_x_percent: 0.1,
-      offset_y_percent: 0.1,
-    }
-  }
-
   /// Creates a centered RouteScale with medium size
   pub fn centered() -> Self {
     Self {
@@ -43,6 +34,17 @@ impl RouteScale {
       scale: 0.7,
       offset_x_percent: 0.15,
       offset_y_percent: 0.15,
+    }
+  }
+}
+
+impl Default for RouteScale {
+  /// Creates a default RouteScale (small route, top-left corner)
+  fn default() -> Self {
+    Self {
+      scale: 0.2,
+      offset_x_percent: 0.1,
+      offset_y_percent: 0.1,
     }
   }
 }
@@ -76,16 +78,6 @@ impl RouteColor {
     }
   }
 
-  /// Creates default colors (red route, green marker, white text)
-  pub fn default() -> Self {
-    Self {
-      route_line: [0.0, 0.0, 255.0, 0.0], // Red
-      current_position: [0.0, 255.0, 0.0, 0.0], // Green
-      text: [255.0, 255.0, 255.0, 0.0],   // White
-      lap_bars: [0.0, 255.0, 0.0, 0.0],   // Green
-    }
-  }
-
   /// Creates a blue color scheme
   pub fn blue_scheme() -> Self {
     Self {
@@ -103,6 +95,18 @@ impl RouteColor {
       current_position: [0.0, 255.0, 255.0, 0.0], // Yellow
       text: [255.0, 255.0, 255.0, 0.0],     // White
       lap_bars: [255.0, 0.0, 255.0, 0.0],   // Magenta
+    }
+  }
+}
+
+impl Default for RouteColor {
+  /// Creates default colors (red route, green marker, white text)
+  fn default() -> Self {
+    Self {
+      route_line: [0.0, 0.0, 255.0, 0.0], // Red
+      current_position: [0.0, 255.0, 0.0, 0.0], // Green
+      text: [255.0, 255.0, 255.0, 0.0],   // White
+      lap_bars: [0.0, 255.0, 0.0, 0.0],   // Green
     }
   }
 }
@@ -131,9 +135,11 @@ impl FileConfig {
       output_file,
     }
   }
+}
 
+impl Default for FileConfig {
   /// Creates default FileConfig
-  pub fn default() -> Self {
+  fn default() -> Self {
     Self {
       fit_file: "source/example.fit".to_string(),
       background_image: "source/example.jpg".to_string(),

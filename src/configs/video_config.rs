@@ -27,7 +27,8 @@ impl PaceDistConfig {
     position: Option<(i32, i32)>,
     show_pace: bool,
     show_distance: bool,
-  ) -> Self {
+  )
+-> Self {
     Self {
       font_scale,
       thickness,
@@ -35,18 +36,6 @@ impl PaceDistConfig {
       position,
       show_pace,
       show_distance,
-    }
-  }
-
-  /// Creates default configuration
-  pub fn default() -> Self {
-    Self {
-      font_scale: 0.5,
-      thickness: 1,
-      font: Font::Simplex,
-      position: None,
-      show_pace: true,
-      show_distance: true,
     }
   }
 
@@ -75,6 +64,20 @@ impl PaceDistConfig {
   }
 }
 
+impl Default for PaceDistConfig {
+  /// Creates default configuration
+  fn default() -> Self {
+    Self {
+      font_scale: 0.5,
+      thickness: 1,
+      font: Font::Simplex,
+      position: None,
+      show_pace: true,
+      show_distance: true,
+    }
+  }
+}
+
 /// Complete configuration for route video generation
 #[derive(Debug, Clone)]
 pub struct LapDataConfig {
@@ -98,6 +101,7 @@ pub struct LapDataConfig {
 
 impl LapDataConfig {
   /// Creates a new LapDataConfig with custom settings
+  #[allow(clippy::too_many_arguments)]
   pub fn new(
     position: (f64, f64),
     font_scale: f64,
@@ -120,20 +124,6 @@ impl LapDataConfig {
     }
   }
 
-  /// Creates default configuration
-  pub fn default() -> Self {
-    Self {
-      position: (0.5, 0.09), // 50% x, 9% y
-      font_scale: 0.5,
-      thickness: 1,
-      font: Font::Simplex,
-      text_color: Color::White,
-      show_heart_rate: true,
-      show_stride_length: true,
-      show_pace_bars: true,
-    }
-  }
-
   /// Creates minimal configuration (pace only, no extras)
   pub fn minimal() -> Self {
     Self {
@@ -152,6 +142,22 @@ impl LapDataConfig {
   pub fn detailed() -> Self {
     Self {
       position: (0.5, 0.07), // 50% x, 7% y
+      font_scale: 0.5,
+      thickness: 1,
+      font: Font::Simplex,
+      text_color: Color::White,
+      show_heart_rate: true,
+      show_stride_length: true,
+      show_pace_bars: true,
+    }
+  }
+}
+
+impl Default for LapDataConfig {
+  /// Creates default configuration
+  fn default() -> Self {
+    Self {
+      position: (0.5, 0.09), // 50% x, 9% y
       font_scale: 0.5,
       thickness: 1,
       font: Font::Simplex,
@@ -186,6 +192,7 @@ pub struct RouteVideoConfig {
 
 impl RouteVideoConfig {
   /// Creates a new RouteVideoConfig with all custom settings
+  #[allow(clippy::too_many_arguments)]
   pub fn new(
     route_scale: RouteScale,
     colors: RouteColor,
@@ -205,20 +212,6 @@ impl RouteVideoConfig {
       show_bottom_bar,
       show_route,
       show_lap_data,
-    }
-  }
-
-  /// Creates default configuration
-  pub fn default() -> Self {
-    Self {
-      route_scale: RouteScale::default(),
-      colors: RouteColor::default(),
-      pace_dist: PaceDistConfig::default(),
-      lap_data: LapDataConfig::default(),
-      show_bottom_bar: true,
-      show_route: true,
-      show_lap_data: true,
-      file_config: FileConfig::default(),
     }
   }
 
@@ -255,6 +248,22 @@ impl RouteVideoConfig {
     Self {
       route_scale: RouteScale::centered(),
       colors: RouteColor::neon_scheme(),
+      pace_dist: PaceDistConfig::default(),
+      lap_data: LapDataConfig::default(),
+      show_bottom_bar: true,
+      show_route: true,
+      show_lap_data: true,
+      file_config: FileConfig::default(),
+    }
+  }
+}
+
+impl Default for RouteVideoConfig {
+  /// Creates default configuration
+  fn default() -> Self {
+    Self {
+      route_scale: RouteScale::default(),
+      colors: RouteColor::default(),
       pace_dist: PaceDistConfig::default(),
       lap_data: LapDataConfig::default(),
       show_bottom_bar: true,

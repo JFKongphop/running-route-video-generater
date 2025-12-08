@@ -136,6 +136,7 @@ impl Drawer {
     Ok(())
   }
 
+  #[allow(clippy::too_many_arguments)]
   pub fn text(
     &self,
     frame: &mut Mat,

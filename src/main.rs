@@ -63,8 +63,8 @@ fn main() -> Result<()> {
 
   // Combine all video configurations
   let video_config = RouteVideoConfig::new(
-    route_scale.clone(),
-    colors.clone(),
+    route_scale,
+    colors,
     pace_dist,
     lap_data.clone(),
     video_file_config,

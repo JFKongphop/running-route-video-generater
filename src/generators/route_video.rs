@@ -468,15 +468,13 @@ pub fn progressive_route_with_config(config: RouteVideoConfig) -> Result<()> {
   let position_color = drawer.color(config.colors.current_position);
 
   for (i, point) in pixel_points.iter().enumerate() {
-    if config.show_route {
-      if i > 0 {
-        drawer.line(
-          &mut path_frame,
-          pixel_points[i - 1],
-          *point,
-          route_color,
-        )?;
-      }
+    if config.show_route && i > 0 {
+      drawer.line(
+        &mut path_frame,
+        pixel_points[i - 1],
+        *point,
+        route_color,
+      )?;
     }
 
     let mut current_frame = path_frame.clone();
@@ -489,29 +487,31 @@ pub fn progressive_route_with_config(config: RouteVideoConfig) -> Result<()> {
     }
 
     // Draw pace and distance overlay if enabled
-    if config.show_bottom_bar && i < paces.len() && i < distances.len() {
-      if config.pace_dist.show_pace || config.pace_dist.show_distance {
-        let pace_text = if config.pace_dist.show_pace {
-          format!("Pace: {} min/km", paces[i])
-        } else {
-          String::new()
-        };
+    if config.show_bottom_bar
+      && i < paces.len()
+      && i < distances.len()
+      && (config.pace_dist.show_pace || config.pace_dist.show_distance)
+    {
+      let pace_text = if config.pace_dist.show_pace {
+        format!("Pace: {} min/km", paces[i])
+      } else {
+        String::new()
+      };
 
-        let dist_text = if config.pace_dist.show_distance {
-          format!("Dist: {:.2} km", distances[i] / 1000.0)
-        } else {
-          String::new()
-        };
+      let dist_text = if config.pace_dist.show_distance {
+        format!("Dist: {:.2} km", distances[i] / 1000.0)
+      } else {
+        String::new()
+      };
 
-        drawer.text_bar(
-          &mut current_frame,
-          &pace_text,
-          &dist_text,
-          config.pace_dist.font_scale,
-          config.pace_dist.thickness,
-          config.pace_dist.font,
-        )?;
-      }
+      drawer.text_bar(
+        &mut current_frame,
+        &pace_text,
+        &dist_text,
+        config.pace_dist.font_scale,
+        config.pace_dist.thickness,
+        config.pace_dist.font,
+      )?;
     }
 
     video.write(&current_frame)?;
