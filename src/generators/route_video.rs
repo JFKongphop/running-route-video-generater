@@ -5,7 +5,10 @@ use crate::{
     fit_data::{LapData, RouteData},
   },
   utils::{
-    converter::{convert_pace_to_sec, get_bounds, load_and_resize_image, pace_percentage, string_space},
+    converter::{
+      convert_pace_to_sec, get_bounds, load_and_resize_image, pace_percentage,
+      string_space,
+    },
     creator::video_creator,
     element_drawer::Drawer,
     performance::processed,
@@ -40,7 +43,7 @@ pub fn progressive_route(
   offset_x_percent: f64,
   offset_y_percent: f64,
 ) -> Result<()> {
-  /********** Read and extract data **********/
+  // Read and extract data
   #[rustfmt::skip]
   let (route, lap) = fit_reader("source/example.fit")?;
   let RouteData {
@@ -54,18 +57,18 @@ pub fn progressive_route(
     avg_step_length,
   } = lap;
 
-  /********** Normalize coordinates **********/
+  // Normalize coordinates
   #[rustfmt::skip]
   let (
     (lat_min, lat_max),
     (lon_min, lon_max)
   ) = get_bounds(&points);
 
-  /********** Get backgrund image **********/
+  // Get background image
   let (bg_image, width, height) =
     load_and_resize_image("source/example.jpg", 1080)?;
 
-  /********** Coordinate normalization to image space **********/
+  // Coordinate normalization to image space
   let to_px = |lat: f64, lon: f64| -> core::Point {
     let nx = if lon_max != lon_min {
       (lon - lon_min) / (lon_max - lon_min)
@@ -84,7 +87,7 @@ pub fn progressive_route(
     core::Point::new(x, y)
   };
 
-  /********** Initialized video generator **********/
+  // Initialized video generator
   #[rustfmt::skip]
   let pixel_points: Vec<core::Point> = points
     .iter()
@@ -94,7 +97,7 @@ pub fn progressive_route(
   let output_file = "outputs/simple.mp4";
   let mut video = video_creator(width, height, fps, output_file)?;
 
-  /********** Initialized frame **********/
+  // Initialize frame
   // let mut path_frame = Mat::zeros(height, width, core::CV_8UC3)?.to_mat()?;
   let mut resized = Mat::default();
   imgproc::resize(
@@ -127,9 +130,16 @@ pub fn progressive_route(
   let min_denominator = (min_val / 30.0).floor() * 30.0;
   let bar_max_width = 200;
 
-  /********** Create lap data **********/
+  // Create lap data
   drawer
-    .header(&mut path_frame, start_x, start_y, font_scale, thickness, font)
+    .header(
+      &mut path_frame,
+      start_x,
+      start_y,
+      font_scale,
+      2,
+      font,
+    )
     .expect("Failed to draw header!");
 
   let green_color = drawer.color([0.0, 255.0, 0.0, 0.0]);
@@ -200,7 +210,7 @@ pub fn progressive_route(
       .expect("Failed to draw bar");
   }
 
-  /********** Create progressive route **********/
+  // Create progressive route
   let red_color = drawer.color([0.0, 0.0, 255.0, 0.0]);
   for (i, point) in pixel_points.iter().enumerate() {
     if i > 0 {
@@ -264,10 +274,8 @@ pub fn progressive_route(
 /// let config = RouteVideoConfig::default(1080);
 /// progressive_route_with_config(config)?;
 /// ```
-pub fn progressive_route_with_config(
-  config: RouteVideoConfig,
-) -> Result<()> {
-  /********** Read and extract data **********/
+pub fn progressive_route_with_config(config: RouteVideoConfig) -> Result<()> {
+  // Read and extract data
   #[rustfmt::skip]
   let (route, lap) = fit_reader(&config.file_config.fit_file)?;
   let RouteData {
@@ -281,18 +289,20 @@ pub fn progressive_route_with_config(
     avg_step_length,
   } = lap;
 
-  /********** Normalize coordinates **********/
+  // Normalize coordinates
   #[rustfmt::skip]
   let (
     (lat_min, lat_max),
     (lon_min, lon_max)
   ) = get_bounds(&points);
 
-  /********** Get background image **********/
-  let (bg_image, width, height) =
-    load_and_resize_image(&config.file_config.background_image, 1080)?;
+  // Get background image
+  let (bg_image, width, height) = load_and_resize_image(
+    &config.file_config.background_image,
+    1080,
+  )?;
 
-  /********** Coordinate normalization to image space **********/
+  // Coordinate normalization to image space
   let to_px = |lat: f64, lon: f64| -> core::Point {
     let nx = if lon_max != lon_min {
       (lon - lon_min) / (lon_max - lon_min)
@@ -313,16 +323,21 @@ pub fn progressive_route_with_config(
     core::Point::new(x, y)
   };
 
-  /********** Initialized video generator **********/
+  // Initialized video generator
   #[rustfmt::skip]
   let pixel_points: Vec<core::Point> = points
     .iter()
     .map(|&(la, lo)| to_px(la, lo))
     .collect();
   let fps = (pixel_points.len() / 15) as f64;
-  let mut video = video_creator(width, height, fps, &config.file_config.output_file)?;
+  let mut video = video_creator(
+    width,
+    height,
+    fps,
+    &config.file_config.output_file,
+  )?;
 
-  /********** Initialized frame **********/
+  // Initialize frame
   let mut resized = Mat::default();
   imgproc::resize(
     &bg_image,
@@ -349,10 +364,17 @@ pub fn progressive_route_with_config(
     .expect("Failed to find min pace");
   let min_denominator = (min_val / 30.0).floor() * 30.0;
 
-  /********** Create lap data **********/
+  // Create lap data
   if config.show_lap_data {
     drawer
-      .header(&mut path_frame, start_x, start_y, config.lap_data.font_scale, config.lap_data.thickness, config.lap_data.font)
+      .header(
+        &mut path_frame,
+        start_x,
+        start_y,
+        config.lap_data.font_scale,
+        2,
+        config.lap_data.font,
+      )
       .expect("Failed to draw header!");
 
     let text_color = drawer.color(config.lap_data.text_color.to_bgra());
@@ -360,7 +382,12 @@ pub fn progressive_route_with_config(
     let size_of_speeds = enhanced_avg_speed.len();
 
     for (i, pace) in enhanced_avg_speed.iter().enumerate() {
-      let size = drawer.text_size(pace, config.lap_data.font_scale, config.lap_data.thickness, config.lap_data.font)?;
+      let size = drawer.text_size(
+        pace,
+        config.lap_data.font_scale,
+        config.lap_data.thickness,
+        config.lap_data.font,
+      )?;
       let x = start_x - size.width / 2;
       let y = start_y + i as i32 * (size.height + 5);
 
@@ -417,7 +444,7 @@ pub fn progressive_route_with_config(
       // Draw pace bars if enabled
       if config.lap_data.show_pace_bars {
         let percent = pace_percentage(min_denominator, pace_seconds[i]);
-        let bar_width = (percent * config.lap_data.bar_max_width as f32) as i32;
+        let bar_width = (percent * 200.0) as i32;
         let bar_height = size.height;
         let bar_x = x + size.width + 60;
         let bar_y = y - size.height;
@@ -435,7 +462,7 @@ pub fn progressive_route_with_config(
     }
   }
 
-  /********** Create progressive route **********/
+  // Create progressive route
   let route_color = drawer.color(config.colors.route_line);
   let position_color = drawer.color(config.colors.current_position);
 
