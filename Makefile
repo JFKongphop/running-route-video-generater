@@ -1,6 +1,6 @@
 # Runarium Makefile
 
-.PHONY: help build run clean test examples video image check fmt
+.PHONY: help build run clean test examples video image check fmt fmt-check
 
 help:
 	@echo "Available commands:"
@@ -12,7 +12,8 @@ help:
 	@echo "  make video        - Run video generation example"
 	@echo "  make image        - Run image generation example"
 	@echo "  make check        - Run cargo check"
-	@echo "  make fmt          - Format code"
+	@echo "  make fmt          - Format code (requires nightly)"
+	@echo "  make fmt-check    - Check code formatting"
 
 build:
 	cargo build
@@ -39,4 +40,7 @@ check:
 	cargo check
 
 fmt:
-	cargo fmt
+	cargo +nightly fmt
+
+fmt-check:
+	cargo +nightly fmt --all -- --check

@@ -9,11 +9,13 @@
 ///
 /// Output: outputs/video.mp4
 use anyhow::Result;
-use runarium::configs::video_config::{
-  Color, FileConfig, Font, LapDataConfig, PaceDistConfig, RouteColor,
-  RouteScale, RouteVideoConfig,
+use runarium::{
+  configs::video_config::{
+    Color, FileConfig, Font, LapDataConfig, PaceDistConfig, RouteColor,
+    RouteScale, RouteVideoConfig,
+  },
+  generators::route_video::progressive_route_with_config,
 };
-use runarium::generators::route_video::progressive_route_with_config;
 
 fn main() -> Result<()> {
   // Configure route scale and position

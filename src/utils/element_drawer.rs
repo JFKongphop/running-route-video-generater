@@ -1,9 +1,10 @@
+use anyhow::Result;
+use opencv::{core, imgproc, prelude::*};
+
 use crate::{
   configs::Font,
   types::drawer_data::{PositionRect, Rect, SizeRect},
 };
-use anyhow::Result;
-use opencv::{core, imgproc, prelude::*};
 
 enum Align {
   Left,

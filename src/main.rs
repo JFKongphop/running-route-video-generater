@@ -1,16 +1,20 @@
 #![allow(unused)]
 
 use anyhow::Result;
-use runarium::configs::image_config::RouteImageConfig;
-use runarium::configs::video_config::{
-  Color, FileConfig, Font, LapDataConfig, PaceDistConfig, RouteColor,
-  RouteScale, RouteVideoConfig,
+use runarium::{
+  configs::{
+    image_config::RouteImageConfig,
+    video_config::{
+      Color, FileConfig, Font, LapDataConfig, PaceDistConfig, RouteColor,
+      RouteScale, RouteVideoConfig,
+    },
+  },
+  generators::{
+    route_image::{image_route_with_config, route_image},
+    route_video::{progressive_route, progressive_route_with_config},
+  },
+  utils::performance::measure,
 };
-use runarium::generators::route_image::{image_route_with_config, route_image};
-use runarium::generators::route_video::{
-  progressive_route, progressive_route_with_config,
-};
-use runarium::utils::performance::measure;
 
 fn main() -> Result<()> {
   // Configure route scale and position

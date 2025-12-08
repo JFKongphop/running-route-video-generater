@@ -1,3 +1,6 @@
+use anyhow::Result;
+use opencv::{core, imgproc, prelude::*};
+
 use crate::{
   configs::RouteVideoConfig,
   types::{
@@ -15,8 +18,6 @@ use crate::{
     read_file::fit_reader,
   },
 };
-use anyhow::Result;
-use opencv::{core, imgproc, prelude::*};
 
 /// Generates an animated video of a running route with lap statistics overlay.
 ///

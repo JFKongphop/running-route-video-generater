@@ -1,5 +1,7 @@
-use super::config::{FileConfig, RouteColor, RouteScale};
-use super::video_config::LapDataConfig;
+use super::{
+  config::{FileConfig, RouteColor, RouteScale},
+  video_config::LapDataConfig,
+};
 
 /// Configuration for route image generation
 #[derive(Debug, Clone)]

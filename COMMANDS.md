@@ -188,7 +188,7 @@ open outputs/car.mp4
 xdg-open outputs/car.mp4
 ```
 
-## 🧪 Testing Command
+## 🧪 Testing Commands
 
 ### Unit Tests
 ```bash

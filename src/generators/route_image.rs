@@ -1,15 +1,22 @@
-use crate::configs::RouteImageConfig;
-use crate::types::fit_data::{LapData, RouteData};
-use crate::types::drawer_data::{PositionRect, Rect, SizeRect};
-use crate::utils::converter::{convert_pace_to_sec, pace_percentage, string_space};
-use crate::utils::creator::image_creator;
-use crate::utils::{
-  converter::{get_bounds, load_and_resize_image},
-  element_drawer::Drawer,
-  read_file::fit_reader,
-};
 use anyhow::Result;
 use opencv::{core, imgproc, prelude::*};
+
+use crate::{
+  configs::RouteImageConfig,
+  types::{
+    drawer_data::{PositionRect, Rect, SizeRect},
+    fit_data::{LapData, RouteData},
+  },
+  utils::{
+    converter::{
+      convert_pace_to_sec, get_bounds, load_and_resize_image, pace_percentage,
+      string_space,
+    },
+    creator::image_creator,
+    element_drawer::Drawer,
+    read_file::fit_reader,
+  },
+};
 
 /// Generates a static route image from FIT file data.
 ///

@@ -1,5 +1,6 @@
-use opencv::core;
 use std::time::Instant;
+
+use opencv::core;
 
 pub fn measure<F, R>(label: &str, f: F) -> R
 where

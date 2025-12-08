@@ -1,8 +1,12 @@
-use crate::types::fit_data::{LapData, RouteData};
-use crate::utils::converter::{semicircles_to_degrees, speed_to_pace};
+use std::fs::File;
+
 use anyhow::Result;
 use fitparser::{profile::MesgNum, Value};
-use std::fs::File;
+
+use crate::{
+  types::fit_data::{LapData, RouteData},
+  utils::converter::{semicircles_to_degrees, speed_to_pace},
+};
 
 pub fn fit_reader(file_path: &str) -> Result<(RouteData, LapData)> {
   let mut paces = Vec::new();

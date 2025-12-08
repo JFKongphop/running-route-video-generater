@@ -9,11 +9,15 @@
 ///
 /// Output: outputs/route.png
 use anyhow::Result;
-use runarium::configs::image_config::RouteImageConfig;
-use runarium::configs::video_config::{
-  Color, FileConfig, Font, LapDataConfig, RouteColor, RouteScale,
+use runarium::{
+  configs::{
+    image_config::RouteImageConfig,
+    video_config::{
+      Color, FileConfig, Font, LapDataConfig, RouteColor, RouteScale,
+    },
+  },
+  generators::route_image::image_route_with_config,
 };
-use runarium::generators::route_image::image_route_with_config;
 
 fn main() -> Result<()> {
   // Configure route scale and position

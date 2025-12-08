@@ -1,3 +1,9 @@
 tab_spaces = 2
 max_width = 80
 fn_call_width = 40
+
+# Import formatting (requires nightly)
+unstable_features = true
+imports_granularity = "Crate"
+group_imports = "StdExternalCrate"
+reorder_imports = true
