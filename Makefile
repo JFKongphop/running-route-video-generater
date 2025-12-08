@@ -1,6 +1,6 @@
 # Runarium Makefile
 
-.PHONY: help build run clean test examples video image check fmt fmt-check
+.PHONY: help build run clean test examples video image check fmt fmt-check clippy
 
 help:
 	@echo "Available commands:"
@@ -14,6 +14,7 @@ help:
 	@echo "  make check        - Run cargo check"
 	@echo "  make fmt          - Format code (requires nightly)"
 	@echo "  make fmt-check    - Check code formatting"
+	@echo "  make clippy       - Run clippy linter"
 
 build:
 	cargo build
@@ -44,3 +45,6 @@ fmt:
 
 fmt-check:
 	cargo +nightly fmt --all -- --check
+
+clippy:
+	cargo clippy --all-features -- -D warnings
