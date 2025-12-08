@@ -78,8 +78,8 @@ You need:
 ```
 my-route-video/
 ├── source/
-│   ├── car.fit       ← Your GPS data
-│   └── map.png      ← Background map
+│   ├── example.fit       ← Your GPS data
+│   └── example.jpg      ← Background map
 └── outputs/
     └── (generated files will go here)
 ```
@@ -243,7 +243,7 @@ echo $LIBCLANG_PATH
 
 ### "FIT file not found"
 
-Make sure your FIT file is at `source/car.fit`:
+Make sure your FIT file is at `source/example.fit`:
 ```bash
 ls -la source/
 ```

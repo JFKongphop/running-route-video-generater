@@ -16,13 +16,10 @@ echo 'runarium = "0.1.0"' >> Cargo.toml
 ### Running Examples
 ```bash
 # Generate video
-cargo run --example generate_video --release
+cargo run --example video_config --release
 
 # Generate static image
-cargo run --example generate_image --release
-
-# Custom scaling demo
-cargo run --example custom_scaling --release
+cargo run --example image_config --release
 ```
 
 ### Building Your Project
@@ -63,7 +60,7 @@ cargo clean
 ### Examples Development
 ```bash
 # Run specific example
-cargo run --example generate_video
+cargo run --example video_config
 
 # List all examples
 ls examples/
@@ -165,7 +162,7 @@ echo $SDKROOT
 mkdir -p source outputs
 
 # Expected files
-# source/car.fit    - Your GPS data
+# source/example.fit    - Your GPS data
 # source/map.png   - Background map
 # outputs/         - Generated files (auto-created)
 ```
@@ -176,7 +173,7 @@ mkdir -p source outputs
 ls -lh source/
 
 # Check FIT file
-file source/car.fit
+file source/example.fit
 
 # View map image info
 file source/map.png

@@ -1,0 +1,48 @@
+name: Commit Message Lint
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+
+jobs:
+  commit-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit messages
+        run: |
+          # Get commit messages
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            COMMITS=$(git log --format=%s origin/${{ github.base_ref }}..${{ github.event.pull_request.head.sha }})
+          else
+            COMMITS=$(git log --format=%s -1)
+          fi
+
+          # Valid prefixes
+          VALID_PREFIXES="^(add|update|fix|remove|refactor|docs|style|test|chore|feat|perf|ci|build|revert):"
+
+          # Check each commit
+          echo "Checking commit messages..."
+          FAILED=0
+          while IFS= read -r commit; do
+            if [[ ! $commit =~ $VALID_PREFIXES ]]; then
+              echo "❌ Invalid commit message: $commit"
+              echo "   Must start with one of: add, update, fix, remove, refactor, docs, style, test, chore, feat, perf, ci, build, revert"
+              FAILED=1
+            else
+              echo "✅ Valid commit message: $commit"
+            fi
+          done <<< "$COMMITS"
+
+          if [ $FAILED -eq 1 ]; then
+            exit 1
+          fi
+          
+          echo "All commit messages are valid!"

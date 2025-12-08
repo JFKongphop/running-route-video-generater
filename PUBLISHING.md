@@ -76,20 +76,15 @@ Update `src/main.rs` to use the new crate name:
 
 ```rust
 use anyhow::Result;
-use runarium::generators::route_video::generate_progressive_route;
+use runarium::generators::route_video::progressive_route_with_config;
+use runarium::configs::video_config::RouteVideoConfig;
 use runarium::utils::performance::measure;
 
 fn main() -> Result<()> {
-    let route_scale = 0.2;
-    let offset_x_percent = 0.1;
-    let offset_y_percent = 0.1;
+    let config = RouteVideoConfig::default();
 
     measure("Total execution", || {
-        generate_progressive_route(
-            route_scale,
-            offset_x_percent,
-            offset_y_percent,
-        )
+        progressive_route_with_config(config)
     })?;
 
     Ok(())

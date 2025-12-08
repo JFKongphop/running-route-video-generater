@@ -37,11 +37,13 @@ runarium = "0.1.0"
 
 ```rust
 use anyhow::Result;
-use runarium::generators::route_video::generate_progressive_route;
+use runarium::generators::route_video::progressive_route_with_config;
+use runarium::configs::video_config::RouteVideoConfig;
 
 fn main() -> Result<()> {
-    generate_progressive_route(0.2, 0.1, 0.1)?;
-    Ok(())
+    let config = RouteVideoConfig::default();
+    progressive_route_with_config(config)?;
+    Ok()
 }
 ```
 
@@ -144,7 +146,7 @@ Before running `cargo publish`:
 3. **PUBLISHING.md** - Complete guide to publish the crate
 
 4. **examples/** - Working code examples:
-   - `generate_video.rs` - Create animated video
+   - `video_config.rs` - Create animated video
    - `generate_image.rs` - Create static image
    - `custom_scaling.rs` - Custom positioning
 
@@ -202,11 +204,12 @@ anyhow = "1.0"
 ### User's main.rs
 ```rust
 use anyhow::Result;
-use runarium::generators::route_video::generate_progressive_route;
+use runarium::generators::route_video::progressive_route_with_config;
+use runarium::configs::video_config::RouteVideoConfig;
 
 fn main() -> Result<()> {
-    // That's it! No complex setup needed
-    generate_progressive_route(0.2, 0.1, 0.1)?;
+    let config = RouteVideoConfig::default();
+    progressive_route_with_config(config)?;
     Ok(())
 }
 ```
@@ -220,7 +223,7 @@ $ cargo run --release
     Finished release [optimized] target(s) in 2m 13s
      Running `target/release/my-running-videos`
 Processed 5199/5199 points
-✅ Video created: outputs/car.mp4
+✅ Video created: outputs/example.mp4
 ⏱️ Total execution: 27.56s
 ```
 

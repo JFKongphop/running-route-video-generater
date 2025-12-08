@@ -103,7 +103,7 @@ fn main() -> Result<()> {
   // Configure lap data panel
   let lap_data = LapDataConfig::new(
     (0.5, 0.09), 0.5, 1, Font::Simplex,
-    Color::White, 200, true, true, true
+    Color::White, true, true, true
   );
   
   // Set file paths
