@@ -1,5 +1,5 @@
 # Build stage
-FROM rustlang/rust:nightly-bookworm as builder
+FROM rustlang/rust:nightly-bookworm AS builder
 
 # Install OpenCV dependencies
 RUN apt-get update && apt-get install -y \
