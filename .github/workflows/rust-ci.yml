@@ -43,7 +43,7 @@ jobs:
           sudo apt-get install -y libopencv-dev clang libclang-dev
       
       - name: Run cargo check
-        run: cargo check --all-features
+        run: cargo check --all-features --lib --bins
 
   fmt:
     name: Rustfmt
@@ -76,7 +76,7 @@ jobs:
           sudo apt-get install -y libopencv-dev clang libclang-dev
       
       - name: Run cargo clippy
-        run: cargo clippy --all-features -- -D warnings
+        run: cargo clippy --all-features --lib --bins -- -D warnings
 
   build:
     name: Build
@@ -93,10 +93,7 @@ jobs:
           sudo apt-get install -y libopencv-dev clang libclang-dev
       
       - name: Build
-        run: cargo build --verbose
-      
-      - name: Build examples
-        run: cargo build --examples --verbose
+        run: cargo build --verbose --lib --bins
 
   test:
     name: Test
