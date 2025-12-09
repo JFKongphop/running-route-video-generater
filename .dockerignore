@@ -1,0 +1,9 @@
+target/
+outputs/
+.git/
+.gitignore
+*.md
+!README.md
+.env
+.DS_Store
+temp_*
