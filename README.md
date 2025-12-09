@@ -85,25 +85,40 @@ use runarium::generators::route_video::progressive_route_with_config;
 
 fn main() -> Result<()> {
   // Configure route scale and position
-  let route_scale = RouteScale::new(0.2, 0.1, 0.1);
+  let route_scale = RouteScale::new(
+    0.2,  // scale
+    0.1,  // offset_x_percent
+    0.1   // offset_y_percent
+  );
   
   // Configure colors (BGRA format)
   let colors = RouteColor::new(
-    [0.0, 0.0, 255.0, 0.0],     // Red route line
-    [0.0, 255.0, 0.0, 0.0],     // Green position marker
-    [255.0, 255.0, 255.0, 0.0], // White text
-    [0.0, 165.0, 255.0, 0.0],   // Orange lap bars
+    [0.0, 0.0, 255.0, 0.0],     // route_line_color (Red)
+    [0.0, 255.0, 0.0, 0.0],     // current_position_color (Green)
+    [255.0, 255.0, 255.0, 0.0], // text_color (White)
+    [0.0, 165.0, 255.0, 0.0]    // lap_bars_color (Orange)
   );
   
   // Configure pace/distance display
   let pace_dist = PaceDistConfig::new(
-    0.6, 2, Font::Simplex, None, true, true
+    0.6,          // pace_font_scale
+    2,            // pace_thickness
+    Font::Simplex,// font_face
+    None,         // position (auto)
+    true,         // show_pace
+    true          // show_distance
   );
   
   // Configure lap data panel
   let lap_data = LapDataConfig::new(
-    (0.5, 0.09), 0.5, 1, Font::Simplex,
-    Color::White, true, true, true
+    (0.5, 0.09),  // position (x, y)
+    0.5,          // lap_font_scale
+    1,            // lap_thickness
+    Font::Simplex,// font_face
+    Color::White, // text_color
+    true,         // show_heart_rate
+    true,         // show_stride_length
+    true          // show_pace_bars
   );
   
   // Set file paths
@@ -115,8 +130,14 @@ fn main() -> Result<()> {
   
   // Create and run configuration
   let config = RouteVideoConfig::new(
-    route_scale, colors, pace_dist, lap_data,
-    file_config, true, true, true
+    route_scale,  // route scale settings
+    colors,       // color configuration
+    pace_dist,    // pace/distance config
+    lap_data,     // lap data panel config
+    file_config,  // file paths
+    true,         // show_bottom_bar
+    true,         // show_route
+    true          // show_lap_data
   );
   
   progressive_route_with_config(config)?;
@@ -133,12 +154,17 @@ use runarium::configs::video_config::{FileConfig, RouteColor, RouteScale};
 use runarium::generators::route_image::image_route_with_config;
 
 fn main() -> Result<()> {
-  let route_scale = RouteScale::new(0.2, 0.1, 0.1);
+  let route_scale = RouteScale::new(
+    0.2,  // scale
+    0.1,  // offset_x_percent
+    0.1   // offset_y_percent
+  );
+  
   let colors = RouteColor::new(
-    [0.0, 0.0, 255.0, 0.0],
-    [0.0, 255.0, 0.0, 0.0],
-    [255.0, 255.0, 255.0, 0.0],
-    [0.0, 165.0, 255.0, 0.0],
+    [0.0, 0.0, 255.0, 0.0],     // route_line_color (Red)
+    [0.0, 255.0, 0.0, 0.0],     // current_position_color (Green)
+    [255.0, 255.0, 255.0, 0.0], // text_color (White)
+    [0.0, 165.0, 255.0, 0.0]    // lap_bars_color (Orange)
   );
   
   let file_config = FileConfig::new(
@@ -148,7 +174,10 @@ fn main() -> Result<()> {
   );
   
   let config = RouteImageConfig::new(
-    route_scale, colors, file_config, 2
+    route_scale,  // route scale settings
+    colors,       // color configuration
+    file_config,  // file paths
+    2             // line_thickness
   );
   
   image_route_with_config(config)?;
@@ -193,6 +222,70 @@ Font::Simplex, Font::Plain, Font::Duplex, Font::Complex,
 Font::Triplex, Font::ComplexSmall, Font::ScriptSimplex,
 Font::ScriptComplex, Font::Italic
 ```
+
+## HTTP Server
+
+Runarium includes an HTTP server for generating videos and images via REST API.
+
+### Running the Server
+
+```bash
+# Local development
+cargo run --example server --release
+
+# Using Docker
+make docker-build
+make docker-up
+
+# Using Makefile
+make server
+```
+
+### API Endpoints
+
+- `POST /generate-video` - Generate animated route video
+- `POST /generate-image` - Generate static route image
+- `GET /download-video/:video_id` - Download generated video (one-time)
+- `GET /download-image/:image_id` - Download generated image (one-time)
+- `GET /health` - Health check
+
+### Quick Test
+
+```bash
+# Test video generation
+make api-test-video
+
+# Test video with custom config
+make api-test-video-config
+
+# Test image generation
+make api-test-image
+
+# Test image with custom config
+make api-test-image-config
+```
+
+### Example cURL Request
+
+```bash
+# Generate video with custom configuration
+curl -X POST http://localhost:3000/generate-video \
+  -F "fit_file=@source/example.fit" \
+  -F "background=@source/example.jpg" \
+  -F 'config={
+    "scale": 0.3,
+    "offset_x_percent": 0.15,
+    "offset_y_percent": 0.15,
+    "route_line_color": [255.0, 0.0, 0.0, 0.0],
+    "show_lap_data": true,
+    "show_pace": true
+  }'
+
+# Download the video (replace VIDEO_ID with response id)
+curl -o output.mp4 http://localhost:3000/download-video/VIDEO_ID
+```
+
+See [SERVER.md](SERVER.md) for complete API documentation.
 
 ## Examples
 
@@ -304,8 +397,12 @@ runarium/
 │       └── read_file.rs      # FIT file reading
 ├── examples/
 │   ├── video_config.rs   # Video generation example
-│   └── image_config.rs   # Image generation example
-└── CONFIGURATION.md      # Detailed configuration guide
+│   ├── image_config.rs   # Image generation example
+│   └── server.rs         # HTTP API server
+├── CONFIGURATION.md      # Detailed configuration guide
+├── SERVER.md             # HTTP server documentation
+├── Dockerfile            # Docker container setup
+└── docker-compose.yml    # Docker orchestration
 ```
 
 ## Troubleshooting
@@ -389,6 +486,8 @@ Built with:
 - [x] Customizable color schemes
 - [x] Configuration-based API
 - [x] Font customization
+- [x] HTTP REST API server
+- [x] Docker deployment support
 - [ ] Support for multiple file formats (GPX, TCX)
 - [ ] Command-line interface
 - [ ] Preset configuration templates
