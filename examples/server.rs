@@ -1,3 +1,5 @@
+use std::{collections::HashMap, env, fs, sync::Arc, time::Instant};
+
 use anyhow::Result;
 use axum::{
   extract::{DefaultBodyLimit, Multipart, State},
@@ -20,7 +22,6 @@ use runarium::{
   },
 };
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, env, fs, sync::Arc, time::Instant};
 use tokio::{fs::File, io::AsyncWriteExt, sync::Mutex};
 use uuid::Uuid;
 
@@ -58,9 +59,10 @@ struct VideoConfigParams {
   scale: f64,
   #[serde(default = "default_offset_x")]
   offset_x_percent: f64,
+
   #[serde(default = "default_offset_y")]
   offset_y_percent: f64,
-  
+
   // Colors (BGRA format)
   #[serde(default = "default_route_line_color")]
   route_line_color: [f64; 4],
@@ -70,13 +72,13 @@ struct VideoConfigParams {
   text_color: [f64; 4],
   #[serde(default = "default_lap_bars_color")]
   lap_bars_color: [f64; 4],
-  
+
   // Pace/Distance config
   #[serde(default = "default_pace_font_scale")]
   pace_font_scale: f64,
   #[serde(default = "default_pace_thickness")]
   pace_thickness: i32,
-  
+
   // Lap data config
   #[serde(default = "default_lap_position_x")]
   lap_position_x: f64,
@@ -86,7 +88,7 @@ struct VideoConfigParams {
   lap_font_scale: f64,
   #[serde(default = "default_lap_thickness")]
   lap_thickness: i32,
-  
+
   // Display options
   #[serde(default = "default_true")]
   show_bottom_bar: bool,
@@ -106,20 +108,48 @@ struct VideoConfigParams {
   show_pace_bars: bool,
 }
 
-fn default_scale() -> f64 { 0.2 }
-fn default_offset_x() -> f64 { 0.1 }
-fn default_offset_y() -> f64 { 0.1 }
-fn default_route_line_color() -> [f64; 4] { [0.0, 0.0, 255.0, 0.0] } // Red
-fn default_current_position_color() -> [f64; 4] { [0.0, 255.0, 0.0, 0.0] } // Green
-fn default_text_color() -> [f64; 4] { [255.0, 255.0, 255.0, 0.0] } // White
-fn default_lap_bars_color() -> [f64; 4] { [0.0, 165.0, 255.0, 0.0] } // Orange
-fn default_pace_font_scale() -> f64 { 0.6 }
-fn default_pace_thickness() -> i32 { 2 }
-fn default_lap_position_x() -> f64 { 0.5 }
-fn default_lap_position_y() -> f64 { 0.09 }
-fn default_lap_font_scale() -> f64 { 0.5 }
-fn default_lap_thickness() -> i32 { 1 }
-fn default_true() -> bool { true }
+fn default_scale() -> f64 {
+  0.2
+}
+fn default_offset_x() -> f64 {
+  0.1
+}
+fn default_offset_y() -> f64 {
+  0.1
+}
+fn default_route_line_color() -> [f64; 4] {
+  [0.0, 0.0, 255.0, 0.0]
+} // Red
+fn default_current_position_color() -> [f64; 4] {
+  [0.0, 255.0, 0.0, 0.0]
+} // Green
+fn default_text_color() -> [f64; 4] {
+  [255.0, 255.0, 255.0, 0.0]
+} // White
+fn default_lap_bars_color() -> [f64; 4] {
+  [0.0, 165.0, 255.0, 0.0]
+} // Orange
+fn default_pace_font_scale() -> f64 {
+  0.6
+}
+fn default_pace_thickness() -> i32 {
+  2
+}
+fn default_lap_position_x() -> f64 {
+  0.5
+}
+fn default_lap_position_y() -> f64 {
+  0.09
+}
+fn default_lap_font_scale() -> f64 {
+  0.5
+}
+fn default_lap_thickness() -> i32 {
+  1
+}
+fn default_true() -> bool {
+  true
+}
 
 // Health check endpoint
 async fn health_check() -> &'static str {
@@ -132,9 +162,9 @@ async fn generate_video(
   mut multipart: Multipart,
 ) -> Result<Json<VideoResponse>, (StatusCode, Json<ErrorResponse>)> {
   let store = &state.0; // video store
-  // Generate unique ID for this video
+                        // Generate unique ID for this video
   let video_id = Uuid::new_v4().to_string();
-  
+
   // Use system temp directory for production compatibility
   let temp_base = env::temp_dir();
   let temp_dir = temp_base.join(format!("runarium_{}", video_id));
@@ -161,36 +191,40 @@ async fn generate_video(
     match name.as_str() {
       "fit_file" => fit_data = Some(data),
       "background" => background_data = Some(data),
-      "config" => config_data = Some(String::from_utf8_lossy(&data).to_string()),
+      "config" => {
+        config_data = Some(String::from_utf8_lossy(&data).to_string())
+      }
       _ => {}
     }
   }
 
   // Parse config or use defaults
   let config_params: VideoConfigParams = match config_data {
-    Some(json_str) => serde_json::from_str(&json_str).unwrap_or_else(|_| VideoConfigParams {
-      scale: default_scale(),
-      offset_x_percent: default_offset_x(),
-      offset_y_percent: default_offset_y(),
-      route_line_color: default_route_line_color(),
-      current_position_color: default_current_position_color(),
-      text_color: default_text_color(),
-      lap_bars_color: default_lap_bars_color(),
-      pace_font_scale: default_pace_font_scale(),
-      pace_thickness: default_pace_thickness(),
-      lap_position_x: default_lap_position_x(),
-      lap_position_y: default_lap_position_y(),
-      lap_font_scale: default_lap_font_scale(),
-      lap_thickness: default_lap_thickness(),
-      show_bottom_bar: default_true(),
-      show_route: default_true(),
-      show_lap_data: default_true(),
-      show_pace: default_true(),
-      show_distance: default_true(),
-      show_heart_rate: default_true(),
-      show_stride_length: default_true(),
-      show_pace_bars: default_true(),
-    }),
+    Some(json_str) => {
+      serde_json::from_str(&json_str).unwrap_or_else(|_| VideoConfigParams {
+        scale: default_scale(),
+        offset_x_percent: default_offset_x(),
+        offset_y_percent: default_offset_y(),
+        route_line_color: default_route_line_color(),
+        current_position_color: default_current_position_color(),
+        text_color: default_text_color(),
+        lap_bars_color: default_lap_bars_color(),
+        pace_font_scale: default_pace_font_scale(),
+        pace_thickness: default_pace_thickness(),
+        lap_position_x: default_lap_position_x(),
+        lap_position_y: default_lap_position_y(),
+        lap_font_scale: default_lap_font_scale(),
+        lap_thickness: default_lap_thickness(),
+        show_bottom_bar: default_true(),
+        show_route: default_true(),
+        show_lap_data: default_true(),
+        show_pace: default_true(),
+        show_distance: default_true(),
+        show_heart_rate: default_true(),
+        show_stride_length: default_true(),
+        show_pace_bars: default_true(),
+      })
+    }
     None => VideoConfigParams {
       scale: default_scale(),
       offset_x_percent: default_offset_x(),
@@ -237,25 +271,30 @@ async fn generate_video(
   let output_path = temp_dir.join("output.mp4");
 
   // Save temporarily
-  write_bytes(&fit_path.to_string_lossy(), &fit_bytes).await.map_err(|e| {
-    (
-      StatusCode::INTERNAL_SERVER_ERROR,
-      Json(ErrorResponse {
-        error: format!("Failed to write temp FIT file: {}", e),
-      }),
-    )
-  })?;
-
-  write_bytes(&bg_path.to_string_lossy(), &background_bytes)
+  write_bytes(&fit_path.to_string_lossy(), &fit_bytes)
     .await
     .map_err(|e| {
       (
         StatusCode::INTERNAL_SERVER_ERROR,
         Json(ErrorResponse {
-          error: format!("Failed to write temp background: {}", e),
+          error: format!("Failed to write temp FIT file: {}", e),
         }),
       )
     })?;
+
+  write_bytes(
+    &bg_path.to_string_lossy(),
+    &background_bytes,
+  )
+  .await
+  .map_err(|e| {
+    (
+      StatusCode::INTERNAL_SERVER_ERROR,
+      Json(ErrorResponse {
+        error: format!("Failed to write temp background: {}", e),
+      }),
+    )
+  })?;
 
   // Create configuration with temp paths (using params from request)
   let route_scale = RouteScale::new(
@@ -281,7 +320,10 @@ async fn generate_video(
   );
 
   let lap_data = LapDataConfig::new(
-    (config_params.lap_position_x, config_params.lap_position_y),
+    (
+      config_params.lap_position_x,
+      config_params.lap_position_y,
+    ),
     config_params.lap_font_scale,
     config_params.lap_thickness,
     Font::Simplex, // font style
@@ -310,24 +352,23 @@ async fn generate_video(
 
   // Generate video (blocking operation) - track time
   let start_time = Instant::now();
-  let video_result = tokio::task::spawn_blocking(move || {
-    progressive_route_with_config(config)
-  })
-  .await
-  .map_err(|e| {
-    let _ = fs::remove_dir_all(&temp_dir);
-    (
-      StatusCode::INTERNAL_SERVER_ERROR,
-      Json(ErrorResponse {
-        error: format!("Task execution failed: {}", e),
-      }),
-    )
-  })?;
+  let video_result =
+    tokio::task::spawn_blocking(move || progressive_route_with_config(config))
+      .await
+      .map_err(|e| {
+        let _ = fs::remove_dir_all(&temp_dir);
+        (
+          StatusCode::INTERNAL_SERVER_ERROR,
+          Json(ErrorResponse {
+            error: format!("Task execution failed: {}", e),
+          }),
+        )
+      })?;
 
   match video_result {
     Ok(_) => {
       let generation_time = start_time.elapsed().as_millis() / 1000;
-      
+
       // Read generated video into memory
       let video_data = fs::read(&output_path).map_err(|e| {
         let _ = fs::remove_dir_all(&temp_dir);
@@ -376,9 +417,9 @@ async fn generate_image(
   mut multipart: Multipart,
 ) -> Result<Json<ImageResponse>, (StatusCode, Json<ErrorResponse>)> {
   let store = &state.1; // image store
-  // Generate unique ID for this image
+                        // Generate unique ID for this image
   let image_id = Uuid::new_v4().to_string();
-  
+
   // Use system temp directory for production compatibility
   let temp_base = env::temp_dir();
   let temp_dir = temp_base.join(format!("runarium_img_{}", image_id));
@@ -405,36 +446,40 @@ async fn generate_image(
     match name.as_str() {
       "fit_file" => fit_data = Some(data),
       "background" => background_data = Some(data),
-      "config" => config_data = Some(String::from_utf8_lossy(&data).to_string()),
+      "config" => {
+        config_data = Some(String::from_utf8_lossy(&data).to_string())
+      }
       _ => {}
     }
   }
 
   // Parse config or use defaults
   let config_params: VideoConfigParams = match config_data {
-    Some(json_str) => serde_json::from_str(&json_str).unwrap_or_else(|_| VideoConfigParams {
-      scale: default_scale(),
-      offset_x_percent: default_offset_x(),
-      offset_y_percent: default_offset_y(),
-      route_line_color: default_route_line_color(),
-      current_position_color: default_current_position_color(),
-      text_color: default_text_color(),
-      lap_bars_color: default_lap_bars_color(),
-      pace_font_scale: default_pace_font_scale(),
-      pace_thickness: default_pace_thickness(),
-      lap_position_x: default_lap_position_x(),
-      lap_position_y: default_lap_position_y(),
-      lap_font_scale: default_lap_font_scale(),
-      lap_thickness: default_lap_thickness(),
-      show_bottom_bar: default_true(),
-      show_route: default_true(),
-      show_lap_data: default_true(),
-      show_pace: default_true(),
-      show_distance: default_true(),
-      show_heart_rate: default_true(),
-      show_stride_length: default_true(),
-      show_pace_bars: default_true(),
-    }),
+    Some(json_str) => {
+      serde_json::from_str(&json_str).unwrap_or_else(|_| VideoConfigParams {
+        scale: default_scale(),
+        offset_x_percent: default_offset_x(),
+        offset_y_percent: default_offset_y(),
+        route_line_color: default_route_line_color(),
+        current_position_color: default_current_position_color(),
+        text_color: default_text_color(),
+        lap_bars_color: default_lap_bars_color(),
+        pace_font_scale: default_pace_font_scale(),
+        pace_thickness: default_pace_thickness(),
+        lap_position_x: default_lap_position_x(),
+        lap_position_y: default_lap_position_y(),
+        lap_font_scale: default_lap_font_scale(),
+        lap_thickness: default_lap_thickness(),
+        show_bottom_bar: default_true(),
+        show_route: default_true(),
+        show_lap_data: default_true(),
+        show_pace: default_true(),
+        show_distance: default_true(),
+        show_heart_rate: default_true(),
+        show_stride_length: default_true(),
+        show_pace_bars: default_true(),
+      })
+    }
     None => VideoConfigParams {
       scale: default_scale(),
       offset_x_percent: default_offset_x(),
@@ -481,25 +526,30 @@ async fn generate_image(
   let output_path = temp_dir.join("output.png");
 
   // Save temporarily
-  write_bytes(&fit_path.to_string_lossy(), &fit_bytes).await.map_err(|e| {
-    (
-      StatusCode::INTERNAL_SERVER_ERROR,
-      Json(ErrorResponse {
-        error: format!("Failed to write temp FIT file: {}", e),
-      }),
-    )
-  })?;
-
-  write_bytes(&bg_path.to_string_lossy(), &background_bytes)
+  write_bytes(&fit_path.to_string_lossy(), &fit_bytes)
     .await
     .map_err(|e| {
       (
         StatusCode::INTERNAL_SERVER_ERROR,
         Json(ErrorResponse {
-          error: format!("Failed to write temp background: {}", e),
+          error: format!("Failed to write temp FIT file: {}", e),
         }),
       )
     })?;
+
+  write_bytes(
+    &bg_path.to_string_lossy(),
+    &background_bytes,
+  )
+  .await
+  .map_err(|e| {
+    (
+      StatusCode::INTERNAL_SERVER_ERROR,
+      Json(ErrorResponse {
+        error: format!("Failed to write temp background: {}", e),
+      }),
+    )
+  })?;
 
   // Create configuration for image
   let route_scale = RouteScale::new(
@@ -516,7 +566,10 @@ async fn generate_image(
   );
 
   let lap_data = LapDataConfig::new(
-    (config_params.lap_position_x, config_params.lap_position_y),
+    (
+      config_params.lap_position_x,
+      config_params.lap_position_y,
+    ),
     config_params.lap_font_scale,
     config_params.lap_thickness,
     Font::Simplex,
@@ -542,24 +595,23 @@ async fn generate_image(
 
   // Generate image (blocking operation) - track time
   let start_time = Instant::now();
-  let image_result = tokio::task::spawn_blocking(move || {
-    image_route_with_config(config)
-  })
-  .await
-  .map_err(|e| {
-    let _ = fs::remove_dir_all(&temp_dir);
-    (
-      StatusCode::INTERNAL_SERVER_ERROR,
-      Json(ErrorResponse {
-        error: format!("Task execution failed: {}", e),
-      }),
-    )
-  })?;
+  let image_result =
+    tokio::task::spawn_blocking(move || image_route_with_config(config))
+      .await
+      .map_err(|e| {
+        let _ = fs::remove_dir_all(&temp_dir);
+        (
+          StatusCode::INTERNAL_SERVER_ERROR,
+          Json(ErrorResponse {
+            error: format!("Task execution failed: {}", e),
+          }),
+        )
+      })?;
 
   match image_result {
     Ok(_) => {
       let generation_time = start_time.elapsed().as_millis() / 1000;
-      
+
       // Read generated image into memory
       let image_data = fs::read(&output_path).map_err(|e| {
         let _ = fs::remove_dir_all(&temp_dir);
@@ -608,7 +660,7 @@ async fn download_video(
   axum::extract::Path(video_id): axum::extract::Path<String>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
   let store = &state.0; // video store
-  // Get and remove video from memory in one operation
+                        // Get and remove video from memory in one operation
   let video_data = {
     let mut videos = store.lock().await;
     videos.remove(&video_id)
@@ -617,12 +669,18 @@ async fn download_video(
   match video_data {
     Some(data) => {
       let mut headers = axum::http::HeaderMap::new();
-      headers.insert(header::CONTENT_TYPE, "video/mp4".parse().unwrap());
+      headers.insert(
+        header::CONTENT_TYPE,
+        "video/mp4".parse().unwrap(),
+      );
       headers.insert(
         header::CONTENT_DISPOSITION,
-        format!("attachment; filename=\"route-{}.mp4\"", video_id)
-          .parse()
-          .unwrap(),
+        format!(
+          "attachment; filename=\"route-{}.mp4\"",
+          video_id
+        )
+        .parse()
+        .unwrap(),
       );
       Ok((headers, data))
     }
@@ -641,7 +699,7 @@ async fn download_image(
   axum::extract::Path(image_id): axum::extract::Path<String>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
   let store = &state.1; // image store
-  // Get and remove image from memory in one operation
+                        // Get and remove image from memory in one operation
   let image_data = {
     let mut images = store.lock().await;
     images.remove(&image_id)
@@ -650,12 +708,18 @@ async fn download_image(
   match image_data {
     Some(data) => {
       let mut headers = axum::http::HeaderMap::new();
-      headers.insert(header::CONTENT_TYPE, "image/png".parse().unwrap());
+      headers.insert(
+        header::CONTENT_TYPE,
+        "image/png".parse().unwrap(),
+      );
       headers.insert(
         header::CONTENT_DISPOSITION,
-        format!("attachment; filename=\"route-{}.png\"", image_id)
-          .parse()
-          .unwrap(),
+        format!(
+          "attachment; filename=\"route-{}.png\"",
+          image_id
+        )
+        .parse()
+        .unwrap(),
       );
       Ok((headers, data))
     }
@@ -687,24 +751,18 @@ async fn main() {
     .route("/health", get(health_check))
     .route("/generate-video", post(generate_video))
     .route("/generate-image", post(generate_image))
-    .route("/download-video/:video_id", get(download_video))
-    .route("/download-image/:image_id", get(download_image))
+    .route(
+      "/download-video/:video_id",
+      get(download_video),
+    )
+    .route(
+      "/download-image/:image_id",
+      get(download_image),
+    )
     .layer(DefaultBodyLimit::max(100 * 1024 * 1024)) // 100MB limit
     .with_state((video_store, image_store));
 
-  let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
-    .await
-    .unwrap();
-
-  println!("🚀 Server running on http://localhost:3000");
-  println!("📍 Endpoints:");
-  println!("   POST /generate-video - Upload files and generate video");
-  println!("   POST /generate-image - Upload files and generate route image");
-  println!("   GET  /download-video/:video_id - Download generated video (one-time)");
-  println!("   GET  /download-image/:image_id - Download generated image (one-time)");
-  println!("   GET  /health - Health check");
-  println!();
-  println!("⚠️  Files are stored in memory and deleted after download");
+  let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
 
   axum::serve(listener, app).await.unwrap();
 }
