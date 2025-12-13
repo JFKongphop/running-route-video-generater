@@ -2,6 +2,7 @@ use anyhow::Result;
 use opencv::{core, imgproc, prelude::*};
 
 use crate::{
+  config::RouteScale,
   configs::RouteImageConfig,
   types::{
     drawer_data::{PositionRect, Rect, SizeRect},
@@ -35,18 +36,25 @@ use crate::{
 /// Creates `outputs/route.png` with:
 /// - Complete route path (red line)
 /// - Route overlaid on background image
-pub fn route_image(
-  route_scale: f64,
-  offset_x_percent: f64,
-  offset_y_percent: f64,
-) -> Result<()> {
+pub fn route_image(route_scale: RouteScale) -> Result<()> {
+  let RouteScale {
+    scale,
+    offset_x_percent,
+    offset_y_percent,
+  } = route_scale;
+
   #[rustfmt::skip]
-  let (route, _lap) = fit_reader("source/example.fit")?;
+  let (route, lap) = fit_reader("source/example.fit")?;
   let RouteData {
     paces: _,
     gps_points: points,
     distances: _,
   } = route;
+  let LapData {
+    avg_heart_rate,
+    enhanced_avg_speed,
+    avg_step_length,
+  } = lap;
 
   // -------- Normalize coordinates --------
   #[rustfmt::skip]
@@ -73,9 +81,9 @@ pub fn route_image(
       0.5
     };
 
-    let x = ((offset_x_percent + nx * route_scale) * width as f64) as i32;
+    let x = ((offset_x_percent + nx * scale) * width as f64) as i32;
     #[rustfmt::skip]
-    let y = ((offset_y_percent + (1.0 - ny) * route_scale) * width as f64) as i32;
+    let y = ((offset_y_percent + (1.0 - ny) * scale) * width as f64) as i32;
     core::Point::new(x, y)
   };
 
@@ -98,6 +106,104 @@ pub fn route_image(
 
   let mut route_image = resized.clone();
   let drawer = Drawer::new(width, height);
+
+  let font = crate::configs::video_config::Font::Simplex;
+  let font_scale = 0.5;
+  let thickness = 1;
+
+  let pace_seconds: Vec<f32> = enhanced_avg_speed
+    .iter()
+    .map(|p| convert_pace_to_sec(p))
+    .collect();
+
+  let start_x = width / 2;
+  let start_y = 100;
+  let min_val = *pace_seconds
+    .iter()
+    .min_by(|a, b| a.total_cmp(b))
+    .expect("Failed to find min pace");
+  let min_denominator = (min_val / 30.0).floor() * 30.0;
+  let bar_max_width = 200;
+
+  // Create lap data
+  drawer
+    .header(
+      &mut route_image,
+      start_x,
+      start_y,
+      font_scale,
+      2,
+      font,
+    )
+    .expect("Failed to draw header!");
+
+  let green_color = drawer.color([0.0, 255.0, 0.0, 0.0]);
+  let white_color = drawer.color([255.0, 255.0, 255.0, 0.0]);
+  let size_of_speeds = enhanced_avg_speed.len();
+  for (i, pace) in enhanced_avg_speed.iter().enumerate() {
+    let size = drawer.text_size(pace, font_scale, thickness, font)?;
+    let x = start_x - size.width / 2;
+    let y = start_y + i as i32 * (size.height + 5);
+
+    let pace_space = string_space(size_of_speeds, i + 1, pace);
+    drawer
+      .text(
+        &mut route_image,
+        &pace_space,
+        x,
+        y,
+        font_scale,
+        thickness,
+        font,
+        white_color,
+      )
+      .expect("Failed to draw pace");
+
+    let hr = &format!("{}", avg_heart_rate[i]);
+    drawer
+      .text(
+        &mut route_image,
+        hr,
+        x + 300,
+        y,
+        font_scale,
+        thickness,
+        font,
+        white_color,
+      )
+      .expect("Failed to draw heart rate");
+
+    let lenght_meters = avg_step_length[i] / 10.0;
+    let stride_length = &format!("{}", lenght_meters);
+    drawer
+      .text(
+        &mut route_image,
+        stride_length,
+        x + 350,
+        y,
+        font_scale,
+        thickness,
+        font,
+        white_color,
+      )
+      .expect("Failed to draw stride length");
+
+    let percent = pace_percentage(min_denominator, pace_seconds[i]);
+    let bar_width = (percent * bar_max_width as f32) as i32;
+    let bar_height = size.height;
+    let bar_x = x + size.width + 60;
+    let bar_y = y - size.height;
+    let rect = Rect {
+      pos: PositionRect { x: bar_x, y: bar_y },
+      size: SizeRect {
+        width: bar_width,
+        height: bar_height,
+      },
+    };
+    drawer
+      .rectangle(&mut route_image, rect, green_color)
+      .expect("Failed to draw bar");
+  }
 
   // Draw route path
   let red_color = drawer.color([0.0, 0.0, 255.0, 0.0]);
