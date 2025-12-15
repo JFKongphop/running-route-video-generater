@@ -20,6 +20,10 @@ path = "src/lib.rs"
 name = "runarium"
 path = "src/main.rs"
 
+[[bin]]
+name = "rvs"
+path = "src/experiments/route_video_scratch.rs"
+
 [dependencies]
 anyhow = "1.0.99"
 fitparser = "0.10.0"

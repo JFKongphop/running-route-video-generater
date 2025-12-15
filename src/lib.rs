@@ -9,3 +9,4 @@ pub use generators::{
   route_image::image_route_with_config,
   route_video::progressive_route_with_config,
 };
+pub use utils::{converter::get_bounds, read_file::fit_reader};

@@ -95,8 +95,9 @@ fn main() -> Result<()> {
     //   route_scale.offset_x_percent,
     //   route_scale.offset_y_percent,
     // )
-    // progressive_route_with_config(video_config);
-    image_route_with_config(image_config)
+    progressive_route_with_config(video_config)
+    // image_route_with_config(image_config)
+    // route_image(route_scale)
   })?;
 
   Ok(())
